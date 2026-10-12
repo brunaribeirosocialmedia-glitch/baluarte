@@ -29,6 +29,8 @@ import Obrigacoes from './pages/gestao/Obrigacoes'
 import Documentos from './pages/gestao/Documentos'
 import PaginaAprovacao from './pages/PaginaAprovacao'
 import Socorro from './pages/Socorro'
+import Processos from './pages/Processos'
+import Agencia, { Precificacao, MetasAgencia } from './pages/agencia/Agencia'
 
 // Links antigos (#/financeiro/...) continuam funcionando
 function RedirecionarFinanceiro() {
@@ -111,6 +113,12 @@ function AppAutenticado() {
           <Route path="financeiro/*" element={<RedirecionarFinanceiro />} />
           <Route path="caixa-de-pandora" element={<Socorro />} />
           <Route path="socorro" element={<Navigate to="/caixa-de-pandora" replace />} />
+          <Route path="processos" element={<Processos />} />
+          <Route path="agencia" element={<AreaProtegida area="financeiro" nome="Agência"><Agencia /></AreaProtegida>}>
+            <Route index element={<Navigate to="precificacao" replace />} />
+            <Route path="precificacao" element={<Precificacao />} />
+            <Route path="metas" element={<MetasAgencia />} />
+          </Route>
           <Route path="equipe" element={<Equipe />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

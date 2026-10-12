@@ -9,9 +9,23 @@ import Icone from '../components/Icone'
   A equipe consulta estruturas de conteúdo (bio por nicho, ganchos de
   Reel/carrossel, CTAs, estrutura de legenda). A admin cria, edita e
   remove itens e categorias pela própria tela (tabelas socorro_*).
+
+  O mesmo componente (Biblioteca) serve Processos e as abas da Agência:
+  cada categoria pertence a uma "secao" (migration 17).
 */
 
 export default function Socorro() {
+  return (
+    <Biblioteca
+      secao="pandora"
+      titulo="Caixa de Pandora"
+      descricao="A biblioteca da B Mídia. Estruturas prontas para consultar na hora de criar."
+    />
+  )
+}
+
+// titulo vazio = a tela já tem cabeçalho próprio (abas da Agência)
+export function Biblioteca({ secao, titulo, descricao }) {
   const { permissoes } = useAuth()
   const admin = !!permissoes.admin
 
@@ -28,8 +42,9 @@ export default function Socorro() {
 
   async function carregar() {
     const [{ data: cats }, { data: its, error }] = await Promise.all([
-      supabase.from('socorro_categorias').select('*').order('ordem'),
-      supabase.from('socorro_itens').select('*').eq('ativo', true).order('ordem'),
+      supabase.from('socorro_categorias').select('*').eq('secao', secao).order('ordem'),
+      supabase.from('socorro_itens').select('*, socorro_categorias!inner(secao)')
+        .eq('socorro_categorias.secao', secao).eq('ativo', true).order('ordem'),
     ])
     if (error) setErro(traduzirErro(error))
     setCategorias(cats || [])
@@ -37,7 +52,7 @@ export default function Socorro() {
     setCarregando(false)
   }
 
-  useEffect(() => { carregar() }, [])
+  useEffect(() => { carregar() }, [secao])
 
   const nomeCategoria = useMemo(() => {
     const m = {}
@@ -80,8 +95,8 @@ export default function Socorro() {
 
       <header className="socorro-topo">
         <div>
-          <h1>Caixa de Pandora</h1>
-          <p className="texto-suave">A biblioteca da B Mídia. Estruturas prontas para consultar na hora de criar.</p>
+          {titulo && <h1>{titulo}</h1>}
+          {descricao && <p className="texto-suave">{descricao}</p>}
         </div>
         {admin && (
           <button className="botao botao-principal" onClick={() => setEditando({ novo: true, categoria_id: categorias[0]?.id || '', titulo: '', conteudo: '', nicho: '' })} disabled={!categorias.length}>
@@ -100,7 +115,7 @@ export default function Socorro() {
         />
       </div>
 
-      {!termo && (
+      {!termo && (categorias.length > 1 || admin) && (
         <div className="socorro-chips">
           <button className={`chip ${catAtiva === 'todas' ? 'ativo' : ''}`} onClick={() => setCatAtiva('todas')}>Todas</button>
           {categorias.map((c) => (
@@ -163,6 +178,7 @@ export default function Socorro() {
 
       {novaCategoria && (
         <CategoriaModal
+          secao={secao}
           ordemProxima={(categorias[categorias.length - 1]?.ordem || 0) + 1}
           aoFechar={() => setNovaCategoria(false)}
           aoSalvar={() => { setNovaCategoria(false); carregar() }}
@@ -246,7 +262,7 @@ function ItemModal({ item, categorias, aoFechar, aoSalvar, aoExcluir }) {
 }
 
 // ------- Modal de nova categoria -------
-function CategoriaModal({ ordemProxima, aoFechar, aoSalvar }) {
+function CategoriaModal({ secao, ordemProxima, aoFechar, aoSalvar }) {
   const [nome, setNome] = useState('')
   const [erro, setErro] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -254,7 +270,7 @@ function CategoriaModal({ ordemProxima, aoFechar, aoSalvar }) {
   async function salvar() {
     if (!nome.trim()) return setErro('Dê um nome à categoria.')
     setSalvando(true); setErro('')
-    const { error } = await supabase.from('socorro_categorias').insert({ nome: nome.trim(), ordem: ordemProxima })
+    const { error } = await supabase.from('socorro_categorias').insert({ nome: nome.trim(), ordem: ordemProxima, secao })
     setSalvando(false)
     if (error) return setErro(traduzirErro(error))
     aoSalvar()
