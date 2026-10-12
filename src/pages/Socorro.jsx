@@ -5,7 +5,7 @@ import Modal, { BotaoExcluir } from '../components/Modal'
 import Icone from '../components/Icone'
 
 /*
-  Socorro — a Biblioteca viva da B Mídia.
+  Caixa de Pandora (antigo Socorro) — a Biblioteca viva da B Mídia.
   A equipe consulta estruturas de conteúdo (bio por nicho, ganchos de
   Reel/carrossel, CTAs, estrutura de legenda). A admin cria, edita e
   remove itens e categorias pela própria tela (tabelas socorro_*).
@@ -80,7 +80,7 @@ export default function Socorro() {
 
       <header className="socorro-topo">
         <div>
-          <h1>Socorro</h1>
+          <h1>Caixa de Pandora</h1>
           <p className="texto-suave">A biblioteca da B Mídia. Estruturas prontas para consultar na hora de criar.</p>
         </div>
         {admin && (

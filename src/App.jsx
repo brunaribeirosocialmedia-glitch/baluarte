@@ -109,7 +109,8 @@ function AppAutenticado() {
             <Route path="documentos" element={<Documentos />} />
           </Route>
           <Route path="financeiro/*" element={<RedirecionarFinanceiro />} />
-          <Route path="socorro" element={<Socorro />} />
+          <Route path="caixa-de-pandora" element={<Socorro />} />
+          <Route path="socorro" element={<Navigate to="/caixa-de-pandora" replace />} />
           <Route path="equipe" element={<Equipe />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
