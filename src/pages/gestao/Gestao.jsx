@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { Biblioteca } from '../Socorro'
 
 // Área Gestão: tudo que é da B Mídia como empresa. Usa o mesmo código/permissão do antigo Financeiro.
 const ABAS = [
@@ -6,6 +7,8 @@ const ABAS = [
   { para: 'contratos', nome: 'Contratos' },
   { para: 'obrigacoes', nome: 'Obrigações' },
   { para: 'documentos', nome: 'Documentos' },
+  { para: 'precificacao', nome: 'Precificação e entrega' },
+  { para: 'metas', nome: 'Metas' },
 ]
 
 export default function Gestao() {
@@ -22,4 +25,13 @@ export default function Gestao() {
       </div>
     </div>
   )
+}
+
+// Textos de referência da agência (vindos do Trello), no formato da Caixa de Pandora
+export function Precificacao() {
+  return <Biblioteca secao="gestao-precificacao" />
+}
+
+export function MetasGestao() {
+  return <Biblioteca secao="gestao-metas" />
 }

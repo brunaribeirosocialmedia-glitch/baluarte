@@ -8,7 +8,7 @@ const nomes = { prospeccao: 'Prospecção', financeiro: 'Gestão' }
 
 // Envolve Prospecção e Gestão (no banco, a área da Gestão se chama 'financeiro'): pede o código antes de mostrar o conteúdo.
 // A proteção de verdade está no banco (RLS); esta tela é a porta de entrada.
-export default function AreaProtegida({ area, nome, children }) {
+export default function AreaProtegida({ area, children }) {
   const { permissoes, atualizarPermissoes } = useAuth()
   const [codigo, setCodigo] = useState('')
   const [erro, setErro] = useState('')
@@ -58,7 +58,7 @@ export default function AreaProtegida({ area, nome, children }) {
       <div className="tela-codigo">
         <form className="cartao cartao-codigo" onSubmit={desbloquear}>
           <span className="selo-cadeado"><Icone nome="cadeado" tamanho={26} /></span>
-          <h1>{nome || nomes[area]}</h1>
+          <h1>{nomes[area]}</h1>
           <p className="texto-suave">Área protegida. Digite o código de acesso para continuar.</p>
           <label className="campo">
             <span>Código de acesso</span>
@@ -84,7 +84,7 @@ export default function AreaProtegida({ area, nome, children }) {
     <>
       <div className="faixa-protegida">
         <span>
-          <Icone nome="cadeadoAberto" tamanho={15} /> {nome || nomes[area]} liberado
+          <Icone nome="cadeadoAberto" tamanho={15} /> {nomes[area]} liberado
           {expiraEm && ` até ${expiraEm.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`}
         </span>
         <button className="botao-link" onClick={bloquear}>Trancar agora</button>

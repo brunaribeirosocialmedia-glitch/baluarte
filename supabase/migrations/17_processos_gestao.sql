@@ -1,5 +1,5 @@
 -- =====================================================================
--- COMPASSO · 17 · Processos e Agência
+-- COMPASSO · 17 · Processos e textos da Gestão
 -- =====================================================================
 -- Depende de: 16_socorro_biblioteca, 01 (tem_acesso_area, eh_admin)
 --
@@ -7,10 +7,10 @@
 -- Cada categoria pertence a uma "seção":
 --   pandora               → Caixa de Pandora
 --   processos             → Processos (cliente novo, briefing)
---   agencia-precificacao  → Agência › Precificação e entrega
---   agencia-metas         → Agência › Metas
+--   gestao-precificacao  → Gestão › Precificação e entrega
+--   gestao-metas         → Gestão › Metas
 --
--- Acesso: as seções da Agência têm custos e pró-labore, então pedem a
+-- Acesso: as seções da Gestão têm custos e pró-labore, então pedem a
 -- mesma liberação da Gestão (pode_financeiro + código). As demais
 -- seguem como antes: equipe ativa lê, admin edita.
 -- =====================================================================
@@ -29,7 +29,7 @@ security definer
 set search_path = ''
 as $$
   select public.eh_membro_ativo()
-     and (p_secao not like 'agencia%' or public.tem_acesso_area('financeiro'));
+     and (p_secao not like 'gestao%' or public.tem_acesso_area('financeiro'));
 $$;
 
 revoke execute on function public.pode_ver_secao(text) from public, anon;
@@ -78,19 +78,19 @@ update public.socorro_itens
        titulo = 'Briefing do cliente (perguntas)'
  where id = 'a4ac9fe7-18e9-4a68-a37f-d41b187e07f9';
 
--- Agência › Precificação e entrega
+-- Gestão › Precificação e entrega
 insert into public.socorro_categorias (nome, ordem, secao) values
-  ('Precificação e entrega', 1, 'agencia-precificacao');
+  ('Precificação e entrega', 1, 'gestao-precificacao');
 
 insert into public.socorro_itens (categoria_id, titulo, conteudo, ordem)
-select (select id from public.socorro_categorias where secao = 'agencia-precificacao'),
+select (select id from public.socorro_categorias where secao = 'gestao-precificacao'),
        'Precificação e entrega', n.conteudo, 1
 from public.notas n
 where n.id = 'f5df88eb-2e2c-4d8d-aa0a-3d0eccfa5996';
 
--- Agência › Metas (lista OBJETIVOS)
+-- Gestão › Metas (lista OBJETIVOS)
 insert into public.socorro_categorias (nome, ordem, secao) values
-  ('Objetivos', 1, 'agencia-metas');
+  ('Objetivos', 1, 'gestao-metas');
 
 insert into public.socorro_itens (categoria_id, titulo, conteudo, ordem)
 select c.id, v.titulo, v.conteudo, v.ordem
@@ -108,7 +108,7 @@ from public.socorro_categorias c,
        ('Semestral',  'Meta: R$ 27.000,00', 4),
        ('Anual',      'Meta: R$ 50.000,00', 5)
      ) as v (titulo, conteudo, ordem)
-where c.secao = 'agencia-metas';
+where c.secao = 'gestao-metas';
 
 -- As notas antigas da @agenciabmidia_ saem (o conteúdo agora mora nas abas novas)
 delete from public.notas where id in (
