@@ -33,5 +33,5 @@ export function EsteiraProdutos() {
 }
 
 export function MetasGestao() {
-  return <Biblioteca secao="gestao-metas" quadro />
+  return <Biblioteca secao="gestao-metas" quadro checavel />
 }

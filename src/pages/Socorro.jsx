@@ -27,7 +27,8 @@ export default function Socorro() {
 // titulo vazio = a tela já tem cabeçalho próprio (abas da Gestão)
 // quadro = colunas lado a lado, como as Tarefas: cada categoria vira uma coluna (Esteira e Metas)
 // notas = cartões em grade, como o Bloco de Notas, sem categorias à vista (Esteira de produtos)
-export function Biblioteca({ secao, titulo, descricao, quadro, notas, novoTexto = 'Novo item' }) {
+// checavel = caixinha de feito na frente de cada cartão do quadro (Metas)
+export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, novoTexto = 'Novo item' }) {
   const { permissoes } = useAuth()
   const admin = !!permissoes.admin
 
@@ -81,6 +82,13 @@ export function Biblioteca({ secao, titulo, descricao, quadro, notas, novoTexto 
       setCopiado(item.id)
       setTimeout(() => setCopiado(null), 1800)
     } catch { setErro('Não deu para copiar. Selecione o texto e copie manualmente.') }
+  }
+
+  async function marcar(item) {
+    const feito = !item.feito
+    setItens((atual) => atual.map((i) => (i.id === item.id ? { ...i, feito } : i)))
+    const { error } = await supabase.from('socorro_itens').update({ feito }).eq('id', item.id)
+    if (error) { setErro(traduzirErro(error)); carregar() }
   }
 
   async function excluirItem(item) {
@@ -167,17 +175,32 @@ export function Biblioteca({ secao, titulo, descricao, quadro, notas, novoTexto 
                 <section className="coluna" key={c.id}>
                   <header className="coluna-topo">
                     <h3>{c.nome}</h3>
-                    <span className="contador">{lista.length}</span>
+                    <span className="contador">{checavel ? `${lista.filter((i) => i.feito).length}/${lista.length}` : lista.length}</span>
                   </header>
                   <div className="coluna-cartoes">
                     {lista.map((item) => (
                       <article
                         key={item.id}
-                        className={`cartao-tarefa socorro-cartao ${admin ? 'clicavel' : ''}`}
+                        className={`cartao-tarefa socorro-cartao ${admin ? 'clicavel' : ''} ${checavel && item.feito ? 'feito' : ''}`}
                         onClick={() => admin && setEditando(item)}
                       >
-                        <strong>{item.titulo}</strong>
-                        {item.conteudo && <p className="socorro-conteudo">{item.conteudo}</p>}
+                        <div className="socorro-cartao-linha">
+                          {checavel && (
+                            <input
+                              type="checkbox"
+                              className="socorro-check"
+                              checked={!!item.feito}
+                              disabled={!admin}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={() => marcar(item)}
+                              aria-label={item.feito ? 'Desmarcar' : 'Marcar como feito'}
+                            />
+                          )}
+                          <div className="socorro-cartao-texto">
+                            <strong>{item.titulo}</strong>
+                            {item.conteudo && <p className="socorro-conteudo">{item.conteudo}</p>}
+                          </div>
+                        </div>
                       </article>
                     ))}
                   </div>
@@ -427,6 +450,11 @@ function EstiloSocorro() {
       .socorro-cartao.clicavel { cursor: pointer; }
       .socorro-cartao .socorro-conteudo { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--texto-suave); }
       .socorro-add { align-self: flex-start; }
+      .socorro-cartao-linha { display: flex; align-items: flex-start; gap: 10px; }
+      .socorro-cartao-texto { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      .socorro-check { width: 18px; height: 18px; margin: 1px 0 0; flex-shrink: 0; accent-color: var(--texto); cursor: pointer; }
+      .socorro-cartao.feito strong { text-decoration: line-through; color: var(--texto-suave); }
+      .socorro-cartao.feito { opacity: .75; }
       .socorro-nova-coluna { flex-basis: 220px; align-items: center; justify-content: center; flex-direction: row; gap: 6px;
         min-height: 64px; border-style: dashed; color: var(--texto-suave); font: inherit; font-weight: 600; cursor: pointer; }
       .socorro-nova-coluna:hover { color: var(--texto); border-color: var(--borda-forte); }
