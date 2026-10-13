@@ -24,8 +24,9 @@ export default function Socorro() {
   )
 }
 
-// titulo vazio = a tela já tem cabeçalho próprio (abas da Agência)
-export function Biblioteca({ secao, titulo, descricao }) {
+// titulo vazio = a tela já tem cabeçalho próprio (abas da Gestão)
+// compacto = cartões mais estreitos, mais lado a lado (Esteira e Metas)
+export function Biblioteca({ secao, titulo, descricao, compacto }) {
   const { permissoes } = useAuth()
   const admin = !!permissoes.admin
 
@@ -90,7 +91,7 @@ export function Biblioteca({ secao, titulo, descricao }) {
   }
 
   return (
-    <div className="pagina socorro">
+    <div className={`pagina socorro ${compacto ? 'socorro-compacto' : ''}`}>
       <EstiloSocorro />
 
       <header className="socorro-topo">
@@ -322,6 +323,9 @@ function EstiloSocorro() {
       .socorro-chips .chip-add { display: inline-flex; align-items: center; gap: 4px; border-style: dashed; }
 
       .socorro-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+      .socorro-compacto { max-width: 1400px; }
+      .socorro-compacto .socorro-lista { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+      .socorro-compacto .socorro-item-topo { flex-direction: column; }
       .socorro-item { padding: 18px 20px; }
       .socorro-item-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
       .socorro-item-topo h3 { margin: 0; font-size: 16px; }
