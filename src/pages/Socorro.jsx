@@ -3,6 +3,7 @@ import { supabase, traduzirErro } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Modal, { BotaoExcluir } from '../components/Modal'
 import Icone from '../components/Icone'
+import { formatarMoeda, lerMoeda, paraCampoMoeda } from '../lib/moeda'
 
 /*
   Caixa de Pandora (antigo Socorro) — a Biblioteca viva da B Mídia.
@@ -28,7 +29,8 @@ export default function Socorro() {
 // quadro = colunas lado a lado, como as Tarefas: cada categoria vira uma coluna (Esteira e Metas)
 // notas = cartões em grade, como o Bloco de Notas, sem categorias à vista (Esteira de produtos)
 // checavel = caixinha de feito na frente de cada cartão do quadro (Metas)
-export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, novoTexto = 'Novo item' }) {
+// comValor = campo de valor em reais, mostrado no cartão (Esteira de produtos)
+export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, comValor, novoTexto = 'Novo item' }) {
   const { permissoes } = useAuth()
   const admin = !!permissoes.admin
 
@@ -106,6 +108,7 @@ export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, 
           item={editando}
           categorias={categorias}
           semCategoria={notas}
+          comValor={comValor}
           aoFechar={() => setEditando(null)}
           aoSalvar={() => { setEditando(null); carregar() }}
           aoExcluir={excluirItem}
@@ -150,6 +153,7 @@ export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, 
             {visiveis.map((item) => (
               <button key={item.id} className="cartao nota" onClick={() => admin && setEditando(item)} style={admin ? undefined : { cursor: 'default' }}>
                 <div className="nota-topo"><strong>{item.titulo}</strong></div>
+                {comValor && item.valor != null && <span className="socorro-valor">{formatarMoeda(item.valor)}</span>}
                 {item.conteudo && <p className="nota-previa">{item.conteudo}</p>}
               </button>
             ))}
@@ -307,13 +311,14 @@ export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, 
 }
 
 // ------- Modal de item (criar / editar) -------
-function ItemModal({ item, categorias, semCategoria, aoFechar, aoSalvar, aoExcluir }) {
+function ItemModal({ item, categorias, semCategoria, comValor, aoFechar, aoSalvar, aoExcluir }) {
   const novo = !!item.novo
   const [form, setForm] = useState({
     categoria_id: item.categoria_id || categorias[0]?.id || '',
     titulo: item.titulo || '',
     nicho: item.nicho || '',
     conteudo: item.conteudo || '',
+    valor: paraCampoMoeda(item.valor),
   })
   const [erro, setErro] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -323,12 +328,15 @@ function ItemModal({ item, categorias, semCategoria, aoFechar, aoSalvar, aoExclu
     if (!form.titulo.trim() || !form.categoria_id) {
       return setErro('Preencha a categoria e o título.')
     }
+    const valor = comValor ? lerMoeda(form.valor) : undefined
+    if (Number.isNaN(valor)) return setErro('Valor inválido. Use, por exemplo, 1.500,00.')
     setSalvando(true); setErro('')
     const dados = {
       categoria_id: form.categoria_id,
       titulo: form.titulo.trim(),
       conteudo: form.conteudo,
       nicho: form.nicho.trim() || null,
+      ...(comValor ? { valor } : {}),
     }
     const resp = novo
       ? await supabase.from('socorro_itens').insert(dados)
@@ -371,6 +379,12 @@ function ItemModal({ item, categorias, semCategoria, aoFechar, aoSalvar, aoExclu
           <label className="campo">
             <span>Nicho (opcional)</span>
             <input {...campo('nicho')} placeholder="Ex: Gastronomia" />
+          </label>
+        )}
+        {comValor && (
+          <label className="campo">
+            <span>Valor (R$)</span>
+            <input inputMode="decimal" placeholder="0,00" {...campo('valor')} />
           </label>
         )}
         <label className="campo">
@@ -463,6 +477,7 @@ function EstiloSocorro() {
       .socorro-check:focus-visible { outline: 2px solid var(--texto); outline-offset: 2px; }
       .socorro-cartao.feito strong { text-decoration: line-through; color: var(--texto-suave); }
       .socorro-cartao.feito { opacity: .75; }
+      .socorro-valor { display: inline-block; margin: 2px 0 6px; font-weight: 600; font-size: 15px; color: var(--texto, #040022); }
       .socorro-nova-coluna { flex-basis: 220px; align-items: center; justify-content: center; flex-direction: row; gap: 6px;
         min-height: 64px; border-style: dashed; color: var(--texto-suave); font: inherit; font-weight: 600; cursor: pointer; }
       .socorro-nova-coluna:hover { color: var(--texto); border-color: var(--borda-forte); }
