@@ -26,7 +26,8 @@ export default function Socorro() {
 
 // titulo vazio = a tela já tem cabeçalho próprio (abas da Gestão)
 // quadro = colunas lado a lado, como as Tarefas: cada categoria vira uma coluna (Esteira e Metas)
-export function Biblioteca({ secao, titulo, descricao, quadro }) {
+// notas = cartões em grade, como o Bloco de Notas, sem categorias à vista (Esteira de produtos)
+export function Biblioteca({ secao, titulo, descricao, quadro, notas, novoTexto = 'Novo item' }) {
   const { permissoes } = useAuth()
   const admin = !!permissoes.admin
 
@@ -96,6 +97,7 @@ export function Biblioteca({ secao, titulo, descricao, quadro }) {
         <ItemModal
           item={editando}
           categorias={categorias}
+          semCategoria={notas}
           aoFechar={() => setEditando(null)}
           aoSalvar={() => { setEditando(null); carregar() }}
           aoExcluir={excluirItem}
@@ -112,6 +114,43 @@ export function Biblioteca({ secao, titulo, descricao, quadro }) {
       )}
     </>
   )
+
+  if (notas) {
+    return (
+      <div className="bloco-notas">
+        <EstiloSocorro />
+        <div className="barra-ferramentas">
+          <label className="busca">
+            <Icone nome="busca" tamanho={16} />
+            <input placeholder="Buscar" value={busca} onChange={(e) => setBusca(e.target.value)} />
+          </label>
+          <span className="espaco" />
+          {admin && (
+            <button className="botao botao-principal botao-pequeno" disabled={!categorias.length}
+              onClick={() => setEditando({ novo: true, categoria_id: categorias[0]?.id || '', titulo: '', conteudo: '', nicho: '' })}>
+              <Icone nome="mais" tamanho={16} /> {novoTexto}
+            </button>
+          )}
+        </div>
+        {erro && <p className="alerta alerta-erro recuo">{erro}</p>}
+        {carregando ? (
+          <p className="texto-suave recuo">Carregando…</p>
+        ) : visiveis.length === 0 ? (
+          <div className="cartao vazio recuo"><p>{termo ? 'Nada encontrado.' : 'Ainda não há nada aqui.'}</p></div>
+        ) : (
+          <div className="grade-notas">
+            {visiveis.map((item) => (
+              <button key={item.id} className="cartao nota" onClick={() => admin && setEditando(item)} style={admin ? undefined : { cursor: 'default' }}>
+                <div className="nota-topo"><strong>{item.titulo}</strong></div>
+                {item.conteudo && <p className="nota-previa">{item.conteudo}</p>}
+              </button>
+            ))}
+          </div>
+        )}
+        {modais}
+      </div>
+    )
+  }
 
   if (quadro) {
     return (
@@ -245,7 +284,7 @@ export function Biblioteca({ secao, titulo, descricao, quadro }) {
 }
 
 // ------- Modal de item (criar / editar) -------
-function ItemModal({ item, categorias, aoFechar, aoSalvar, aoExcluir }) {
+function ItemModal({ item, categorias, semCategoria, aoFechar, aoSalvar, aoExcluir }) {
   const novo = !!item.novo
   const [form, setForm] = useState({
     categoria_id: item.categoria_id || categorias[0]?.id || '',
@@ -293,20 +332,24 @@ function ItemModal({ item, categorias, aoFechar, aoSalvar, aoExcluir }) {
       }
     >
       <form className="formulario" onSubmit={(e) => { e.preventDefault(); salvar() }}>
-        <label className="campo">
-          <span>Categoria</span>
-          <select {...campo('categoria_id')}>
-            {categorias.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
-          </select>
-        </label>
+        {!semCategoria && (
+          <label className="campo">
+            <span>Categoria</span>
+            <select {...campo('categoria_id')}>
+              {categorias.map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
+            </select>
+          </label>
+        )}
         <label className="campo">
           <span>Título</span>
           <input {...campo('titulo')} required placeholder="Ex: Bio · Gastronomia" />
         </label>
-        <label className="campo">
-          <span>Nicho (opcional)</span>
-          <input {...campo('nicho')} placeholder="Ex: Gastronomia" />
-        </label>
+        {!semCategoria && (
+          <label className="campo">
+            <span>Nicho (opcional)</span>
+            <input {...campo('nicho')} placeholder="Ex: Gastronomia" />
+          </label>
+        )}
         <label className="campo">
           <span>Conteúdo</span>
           <textarea rows={10} {...campo('conteudo')} placeholder="A estrutura, do jeito que a equipe vai consultar." />
