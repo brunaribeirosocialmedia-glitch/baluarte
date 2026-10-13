@@ -452,7 +452,15 @@ function EstiloSocorro() {
       .socorro-add { align-self: flex-start; }
       .socorro-cartao-linha { display: flex; align-items: flex-start; gap: 10px; }
       .socorro-cartao-texto { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-      .socorro-check { width: 18px; height: 18px; margin: 1px 0 0; flex-shrink: 0; accent-color: var(--texto); cursor: pointer; }
+      .socorro-check { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; margin: 0; flex-shrink: 0;
+        border: 2px solid var(--borda-forte, #c2c2c2); border-radius: 50%; background: transparent; cursor: pointer;
+        display: grid; place-items: center; transition: background .15s, border-color .15s; }
+      .socorro-check:hover:not(:disabled) { border-color: var(--texto); }
+      .socorro-check:checked { background: var(--texto); border-color: var(--texto); }
+      .socorro-check:checked::after { content: ""; width: 5px; height: 9px; margin-top: -2px;
+        border: solid var(--superficie, #fff); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+      .socorro-check:disabled { cursor: default; }
+      .socorro-check:focus-visible { outline: 2px solid var(--texto); outline-offset: 2px; }
       .socorro-cartao.feito strong { text-decoration: line-through; color: var(--texto-suave); }
       .socorro-cartao.feito { opacity: .75; }
       .socorro-nova-coluna { flex-basis: 220px; align-items: center; justify-content: center; flex-direction: row; gap: 6px;
