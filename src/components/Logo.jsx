@@ -8,7 +8,7 @@ export default function Logo({ tamanho = 28, comNome = true }) {
       </svg>
       {comNome && (
         <span className="logo-texto">
-          Compasso<small>B Mídia</small>
+          Baluarte<small>B Mídia</small>
         </span>
       )}
     </span>

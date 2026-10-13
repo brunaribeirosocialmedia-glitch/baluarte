@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase, configurado } from '../lib/supabase'
 
 /*
-  Janela pública de aprovação do cliente (a ponte Compasso ⇄ Cadência).
+  Janela pública de aprovação do cliente (a ponte Baluarte ⇄ Belarte).
   Rota: #/aprovar/<token>  — sem login. Recebe o token por prop (o App
   detecta a rota pelo hash e renderiza esta página fora do portão de login).
   Mostra as peças que estão na coluna "Em aprovação"; ao aprovar, a peça
-  pula para a coluna "Aprovado" no Compasso.
+  pula para a coluna "Aprovado" no Baluarte.
   Visual autossuficiente (identidade B Mídia), independente do tema interno.
 */
 

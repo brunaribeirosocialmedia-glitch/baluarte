@@ -1,4 +1,4 @@
-# Compasso — sistema de gestão interna da B Mídia
+# Baluarte (antigo Compasso) — sistema de gestão interna da B Mídia
 
 ## Etapa 1 · Banco de dados (Supabase) ✅
 
@@ -12,7 +12,7 @@ Migrations em `supabase/migrations/`, uma por módulo, aplicadas **nesta ordem**
 | `04_financeiro.sql` | Faturamento, custos, colaboradores, pró-labore, calculadora |
 
 ### Como instalar
-1. Crie um **projeto novo** no Supabase para o Compasso (separado do Cadência).
+1. Crie um **projeto novo** no Supabase para o Baluarte (separado do Belarte).
 2. **Authentication → Sign In / Providers**: desative "Allow new users to sign up" (a equipe entra só por convite).
 3. **SQL Editor**: cole e rode cada arquivo, na ordem.
 4. **Authentication → Users → Invite user**: convide **você primeiro** — o primeiro usuário vira admin com acesso total. Depois convide a equipe.

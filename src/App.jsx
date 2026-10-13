@@ -71,7 +71,7 @@ function AppAutenticado() {
       <TelaCheia>
         <Logo tamanho={40} />
         <h1>Acesso desativado</h1>
-        <p className="texto-suave">Seu acesso ao Compasso está desativado. Fale com a administração da B Mídia.</p>
+        <p className="texto-suave">Seu acesso ao Baluarte está desativado. Fale com a administração da B Mídia.</p>
         <button className="botao botao-secundario" onClick={sair}>Sair</button>
       </TelaCheia>
     )

@@ -127,7 +127,7 @@ export default function Configuracoes() {
         <p className="texto-suave">
           Envie este link para {cliente.nome}. Com ele, o cliente vê as peças que estão em
           <strong> “Em aprovação”</strong>, pode comentar e aprovar — sem precisar de login.
-          Ao aprovar, a peça passa para a coluna <strong>“Aprovado”</strong> aqui no Compasso.
+          Ao aprovar, a peça passa para a coluna <strong>“Aprovado”</strong> aqui no Baluarte.
         </p>
         {linkAprovacao ? (
           <>
