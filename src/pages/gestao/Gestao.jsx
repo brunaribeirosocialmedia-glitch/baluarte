@@ -7,7 +7,7 @@ const ABAS = [
   { para: 'contratos', nome: 'Contratos' },
   { para: 'obrigacoes', nome: 'Obrigações' },
   { para: 'documentos', nome: 'Documentos' },
-  { para: 'precificacao', nome: 'Precificação e entrega' },
+  { para: 'esteira', nome: 'Esteira de produtos' },
   { para: 'metas', nome: 'Metas' },
 ]
 
@@ -28,8 +28,8 @@ export default function Gestao() {
 }
 
 // Textos de referência da agência (vindos do Trello), no formato da Caixa de Pandora
-export function Precificacao() {
-  return <Biblioteca secao="gestao-precificacao" />
+export function EsteiraProdutos() {
+  return <Biblioteca secao="gestao-esteira" />
 }
 
 export function MetasGestao() {

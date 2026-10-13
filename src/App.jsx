@@ -23,7 +23,7 @@ import VisaoGeral from './pages/financeiro/VisaoGeral'
 import Lancamentos from './pages/financeiro/Lancamentos'
 import Entregas from './pages/financeiro/Entregas'
 import Calculadora from './pages/financeiro/Calculadora'
-import Gestao, { Precificacao, MetasGestao } from './pages/gestao/Gestao'
+import Gestao, { EsteiraProdutos, MetasGestao } from './pages/gestao/Gestao'
 import Contratos from './pages/gestao/Contratos'
 import Obrigacoes from './pages/gestao/Obrigacoes'
 import Documentos from './pages/gestao/Documentos'
@@ -108,7 +108,8 @@ function AppAutenticado() {
             <Route path="contratos" element={<Contratos />} />
             <Route path="obrigacoes" element={<Obrigacoes />} />
             <Route path="documentos" element={<Documentos />} />
-            <Route path="precificacao" element={<Precificacao />} />
+            <Route path="esteira" element={<EsteiraProdutos />} />
+            <Route path="precificacao" element={<Navigate to="/gestao/esteira" replace />} />
             <Route path="metas" element={<MetasGestao />} />
           </Route>
           <Route path="financeiro/*" element={<RedirecionarFinanceiro />} />
