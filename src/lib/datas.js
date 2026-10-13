@@ -36,7 +36,7 @@ export function situacaoPrazo(prazo, concluida) {
 export const SITUACOES_TAREFA = {
   concluida: 'Concluída',
   atrasada: 'Atrasada',
-  hoje: 'Deveria estar pronta hoje',
+  hoje: 'Toma vergonha e termina logo',
   'no-prazo': 'No prazo',
 }
 
