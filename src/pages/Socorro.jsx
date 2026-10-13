@@ -25,8 +25,8 @@ export default function Socorro() {
 }
 
 // titulo vazio = a tela já tem cabeçalho próprio (abas da Gestão)
-// compacto = cartões mais estreitos, mais lado a lado (Esteira e Metas)
-export function Biblioteca({ secao, titulo, descricao, compacto }) {
+// quadro = colunas lado a lado, como as Tarefas: cada categoria vira uma coluna (Esteira e Metas)
+export function Biblioteca({ secao, titulo, descricao, quadro }) {
   const { permissoes } = useAuth()
   const admin = !!permissoes.admin
 
@@ -90,8 +90,80 @@ export function Biblioteca({ secao, titulo, descricao, compacto }) {
     carregar()
   }
 
+  const modais = (
+    <>
+      {editando && (
+        <ItemModal
+          item={editando}
+          categorias={categorias}
+          aoFechar={() => setEditando(null)}
+          aoSalvar={() => { setEditando(null); carregar() }}
+          aoExcluir={excluirItem}
+        />
+      )}
+      {novaCategoria && (
+        <CategoriaModal
+          secao={secao}
+          rotulo={quadro ? 'coluna' : 'categoria'}
+          ordemProxima={(categorias[categorias.length - 1]?.ordem || 0) + 1}
+          aoFechar={() => setNovaCategoria(false)}
+          aoSalvar={() => { setNovaCategoria(false); carregar() }}
+        />
+      )}
+    </>
+  )
+
+  if (quadro) {
+    return (
+      <>
+        <EstiloSocorro />
+        {erro && <p className="alerta alerta-erro recuo">{erro}</p>}
+        {carregando ? (
+          <p className="texto-suave recuo">Carregando…</p>
+        ) : (
+          <div className="board socorro-board">
+            {categorias.map((c) => {
+              const lista = itens.filter((i) => i.categoria_id === c.id)
+              return (
+                <section className="coluna" key={c.id}>
+                  <header className="coluna-topo">
+                    <h3>{c.nome}</h3>
+                    <span className="contador">{lista.length}</span>
+                  </header>
+                  <div className="coluna-cartoes">
+                    {lista.map((item) => (
+                      <article
+                        key={item.id}
+                        className={`cartao-tarefa socorro-cartao ${admin ? 'clicavel' : ''}`}
+                        onClick={() => admin && setEditando(item)}
+                      >
+                        <strong>{item.titulo}</strong>
+                        {item.conteudo && <p className="socorro-conteudo">{item.conteudo}</p>}
+                      </article>
+                    ))}
+                  </div>
+                  {admin && (
+                    <button className="botao botao-fantasma botao-pequeno socorro-add" onClick={() => setEditando({ novo: true, categoria_id: c.id, titulo: '', conteudo: '', nicho: '' })}>
+                      <Icone nome="mais" tamanho={15} /> Adicionar cartão
+                    </button>
+                  )}
+                </section>
+              )
+            })}
+            {admin && (
+              <button className="coluna socorro-nova-coluna" onClick={() => setNovaCategoria(true)}>
+                <Icone nome="mais" tamanho={16} /> Nova coluna
+              </button>
+            )}
+          </div>
+        )}
+        {modais}
+      </>
+    )
+  }
+
   return (
-    <div className={`pagina socorro ${compacto ? 'socorro-compacto' : ''}`}>
+    <div className="pagina socorro">
       <EstiloSocorro />
 
       <header className="socorro-topo">
@@ -167,24 +239,7 @@ export function Biblioteca({ secao, titulo, descricao, compacto }) {
         </div>
       )}
 
-      {editando && (
-        <ItemModal
-          item={editando}
-          categorias={categorias}
-          aoFechar={() => setEditando(null)}
-          aoSalvar={() => { setEditando(null); carregar() }}
-          aoExcluir={excluirItem}
-        />
-      )}
-
-      {novaCategoria && (
-        <CategoriaModal
-          secao={secao}
-          ordemProxima={(categorias[categorias.length - 1]?.ordem || 0) + 1}
-          aoFechar={() => setNovaCategoria(false)}
-          aoSalvar={() => { setNovaCategoria(false); carregar() }}
-        />
-      )}
+      {modais}
     </div>
   )
 }
@@ -203,8 +258,8 @@ function ItemModal({ item, categorias, aoFechar, aoSalvar, aoExcluir }) {
   const campo = (n) => ({ value: form[n], onChange: (e) => setForm({ ...form, [n]: e.target.value }) })
 
   async function salvar() {
-    if (!form.titulo.trim() || !form.conteudo.trim() || !form.categoria_id) {
-      return setErro('Preencha categoria, título e conteúdo.')
+    if (!form.titulo.trim() || !form.categoria_id) {
+      return setErro('Preencha a categoria e o título.')
     }
     setSalvando(true); setErro('')
     const dados = {
@@ -263,13 +318,13 @@ function ItemModal({ item, categorias, aoFechar, aoSalvar, aoExcluir }) {
 }
 
 // ------- Modal de nova categoria -------
-function CategoriaModal({ secao, ordemProxima, aoFechar, aoSalvar }) {
+function CategoriaModal({ secao, rotulo = 'categoria', ordemProxima, aoFechar, aoSalvar }) {
   const [nome, setNome] = useState('')
   const [erro, setErro] = useState('')
   const [salvando, setSalvando] = useState(false)
 
   async function salvar() {
-    if (!nome.trim()) return setErro('Dê um nome à categoria.')
+    if (!nome.trim()) return setErro(`Dê um nome à ${rotulo}.`)
     setSalvando(true); setErro('')
     const { error } = await supabase.from('socorro_categorias').insert({ nome: nome.trim(), ordem: ordemProxima, secao })
     setSalvando(false)
@@ -279,7 +334,7 @@ function CategoriaModal({ secao, ordemProxima, aoFechar, aoSalvar }) {
 
   return (
     <Modal
-      titulo="Nova categoria"
+      titulo={`Nova ${rotulo}`}
       aoFechar={aoFechar}
       largura={440}
       rodape={
@@ -294,7 +349,7 @@ function CategoriaModal({ secao, ordemProxima, aoFechar, aoSalvar }) {
     >
       <form className="formulario" onSubmit={(e) => { e.preventDefault(); salvar() }}>
         <label className="campo">
-          <span>Nome da categoria</span>
+          <span>Nome da {rotulo}</span>
           <input value={nome} onChange={(e) => setNome(e.target.value)} autoFocus placeholder="Ex: Ideias de conteúdo" />
         </label>
         {erro && <p className="alerta alerta-erro">{erro}</p>}
@@ -323,9 +378,15 @@ function EstiloSocorro() {
       .socorro-chips .chip-add { display: inline-flex; align-items: center; gap: 4px; border-style: dashed; }
 
       .socorro-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
-      .socorro-compacto { max-width: 1400px; }
-      .socorro-compacto .socorro-lista { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
-      .socorro-compacto .socorro-item-topo { flex-direction: column; }
+      .socorro-board { padding-top: 20px; }
+      .socorro-board .coluna { max-height: none; }
+      .socorro-cartao { cursor: default; gap: 6px; }
+      .socorro-cartao.clicavel { cursor: pointer; }
+      .socorro-cartao .socorro-conteudo { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--texto-suave); }
+      .socorro-add { align-self: flex-start; }
+      .socorro-nova-coluna { flex-basis: 220px; align-items: center; justify-content: center; flex-direction: row; gap: 6px;
+        min-height: 64px; border-style: dashed; color: var(--texto-suave); font: inherit; font-weight: 600; cursor: pointer; }
+      .socorro-nova-coluna:hover { color: var(--texto); border-color: var(--borda-forte); }
       .socorro-item { padding: 18px 20px; }
       .socorro-item-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
       .socorro-item-topo h3 { margin: 0; font-size: 16px; }

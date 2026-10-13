@@ -29,9 +29,9 @@ export default function Gestao() {
 
 // Textos de referência da agência (vindos do Trello), no formato da Caixa de Pandora
 export function EsteiraProdutos() {
-  return <Biblioteca secao="gestao-esteira" compacto />
+  return <Biblioteca secao="gestao-esteira" quadro />
 }
 
 export function MetasGestao() {
-  return <Biblioteca secao="gestao-metas" compacto />
+  return <Biblioteca secao="gestao-metas" quadro />
 }
