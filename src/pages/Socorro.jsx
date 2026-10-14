@@ -463,7 +463,7 @@ function EstiloSocorro() {
       .socorro-board .coluna { max-height: none; }
       .socorro-cartao { cursor: default; gap: 6px; }
       .socorro-cartao.clicavel { cursor: pointer; }
-      .socorro-cartao .socorro-conteudo { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--texto-suave); }
+      .socorro-cartao .socorro-conteudo { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--texto-suave); overflow-wrap: anywhere; }
       .socorro-add { align-self: flex-start; }
       .socorro-cartao-linha { display: flex; align-items: flex-start; gap: 10px; }
       .socorro-cartao-texto { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -482,9 +482,9 @@ function EstiloSocorro() {
       .socorro-nova-coluna { flex-basis: 220px; align-items: center; justify-content: center; flex-direction: row; gap: 6px;
         min-height: 64px; border-style: dashed; color: var(--texto-suave); font: inherit; font-weight: 600; cursor: pointer; }
       .socorro-nova-coluna:hover { color: var(--texto); border-color: var(--borda-forte); }
-      .socorro-item { padding: 18px 20px; }
+      .socorro-item { padding: 18px 20px; min-width: 0; overflow-wrap: anywhere; }  /* links longos quebram dentro do quadro */
       .socorro-item-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-      .socorro-item-topo h3 { margin: 0; font-size: 16px; }
+      .socorro-item-topo h3 { margin: 0; font-size: 16px; min-width: 0; }
       .socorro-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
       .socorro-cat, .socorro-nicho { font-size: 11px; letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; }
       .socorro-cat { background: #EEF0F6; color: #4A6FA5; }
