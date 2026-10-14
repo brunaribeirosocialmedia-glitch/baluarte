@@ -457,7 +457,8 @@ function EstiloSocorro() {
       .socorro-chips .chip.ativo { background: var(--texto, #040022); color: #fff; border-color: var(--texto, #040022); }
       .socorro-chips .chip-add { display: inline-flex; align-items: center; gap: 4px; border-style: dashed; }
 
-      .socorro-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+      .socorro-lista { columns: 300px; column-gap: 16px; }  /* alvenaria: cada cartão encosta no de cima, sem buraco */
+      .socorro-lista > .socorro-item { break-inside: avoid; margin: 0 0 16px; }
       .socorro-board { padding-top: 20px; }
       .socorro-board .coluna { max-height: none; }
       .socorro-cartao { cursor: default; gap: 6px; }
@@ -492,7 +493,7 @@ function EstiloSocorro() {
       .socorro-conteudo { white-space: pre-wrap; line-height: 1.6; font-size: 14.5px; margin: 14px 0 0; color: var(--texto, #1b1733); }
 
       @media (max-width: 560px) {
-        .socorro-lista { grid-template-columns: 1fr; }
+        .socorro-lista { columns: 1; }
         .socorro-acoes { flex-direction: column; }
       }
     `}</style>
