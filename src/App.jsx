@@ -18,6 +18,7 @@ const QuadroBranco = lazy(() => import('./components/cliente/QuadroBranco'))
 import Equipe from './pages/Equipe'
 import ListaProspects from './pages/prospeccao/ListaProspects'
 import PerfilProspect from './pages/prospeccao/PerfilProspect'
+import Roteiros from './pages/prospeccao/Roteiros'
 import Financeiro from './pages/financeiro/Financeiro'
 import VisaoGeral from './pages/financeiro/VisaoGeral'
 import Lancamentos from './pages/financeiro/Lancamentos'
@@ -94,6 +95,7 @@ function AppAutenticado() {
           </Route>
           <Route path="prospeccao" element={<AreaProtegida area="prospeccao"><Outlet /></AreaProtegida>}>
             <Route index element={<ListaProspects />} />
+            <Route path="roteiros" element={<Roteiros />} />
             <Route path=":prospectId" element={<PerfilProspect />} />
           </Route>
           <Route path="gestao" element={<AreaProtegida area="financeiro"><Gestao /></AreaProtegida>}>

@@ -30,7 +30,7 @@ export default function Socorro() {
 // notas = cartões em grade, como o Bloco de Notas, sem categorias à vista (Esteira de produtos)
 // checavel = caixinha de feito na frente de cada cartão do quadro (Metas)
 // comValor = campo de valor em reais, mostrado no cartão (Esteira de produtos)
-export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, comValor, novoTexto = 'Novo item' }) {
+export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, comValor, novoTexto = 'Novo item', antes }) {
   const { permissoes } = useAuth()
   const admin = !!permissoes.admin
 
@@ -231,6 +231,7 @@ export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, 
   return (
     <div className="pagina socorro">
       <EstiloSocorro />
+      {antes}
 
       <header className="socorro-topo">
         <div>
@@ -239,7 +240,7 @@ export function Biblioteca({ secao, titulo, descricao, quadro, notas, checavel, 
         </div>
         {admin && (
           <button className="botao botao-principal" onClick={() => setEditando({ novo: true, categoria_id: categorias[0]?.id || '', titulo: '', conteudo: '', nicho: '' })} disabled={!categorias.length}>
-            <Icone nome="mais" tamanho={16} /> Novo item
+            <Icone nome="mais" tamanho={16} /> {novoTexto}
           </button>
         )}
       </header>

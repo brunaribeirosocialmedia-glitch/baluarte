@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom'
 import { formatarData, hojeISO, paraISO } from '../../lib/datas'
 
 export const STATUS = {
@@ -52,6 +53,15 @@ export function ProximoContato({ prospect, comPasso = true }) {
       <span className={`prazo ${situacao}`}>{rotulo}</span>
       {comPasso && prospect.proximo_passo && <small className="texto-suave">{prospect.proximo_passo}</small>}
     </span>
+  )
+}
+
+export function AbasProspeccao() {
+  return (
+    <nav className="abas abas-prospeccao">
+      <NavLink to="/prospeccao" end className="aba">Pipeline</NavLink>
+      <NavLink to="/prospeccao/roteiros" className="aba">Roteiros</NavLink>
+    </nav>
   )
 }
 

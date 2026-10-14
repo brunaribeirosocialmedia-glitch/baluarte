@@ -193,6 +193,9 @@ function RegistrarContato({ prospect, aoFechar, aoRegistrar }) {
             )}
           </label>
         </div>
+        <a className="botao-link alinhar-inicio" href="#/prospeccao/roteiros" target="_blank" rel="noreferrer">
+          Abrir os roteiros de mensagem (em outra aba)
+        </a>
         <label className="campo">
           <span>Como foi</span>
           <textarea rows={3} placeholder="O que conversaram, objeções, interesse…" {...campo('texto')} />

@@ -7,7 +7,7 @@ import Modal from '../../components/Modal'
 import Icone from '../../components/Icone'
 import CartaoMeta from '../../components/CartaoMeta'
 import { competenciaDe, proximoMes } from '../../lib/metas'
-import { ETAPAS, EscolhaStatus, ProximoContato, STATUS, SeloStatus, encerrado, fechado, precisaContatar } from './comum'
+import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, STATUS, SeloStatus, encerrado, fechado, precisaContatar } from './comum'
 
 // Datas vazias vão para o fim em qualquer ordenação por data
 const porData = (campo, sentido) => (a, b) => {
@@ -257,6 +257,7 @@ export default function ListaProspects() {
 
   return (
     <div className="pagina pagina-larga">
+      <AbasProspeccao />
       <header className="pagina-topo linha-topo">
         <div>
           <h1>Prospecção</h1>

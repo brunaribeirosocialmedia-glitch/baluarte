@@ -99,6 +99,9 @@
 
 .rodape-perigo { display: flex; justify-content: flex-end; }
 
+/* Abas Pipeline | Roteiros */
+.abas-prospeccao { border-bottom: 1px solid var(--borda); margin-bottom: 8px; }
+
 /* Jornada: cores das etapas */
 .etapa-a_contatar       { --cor-etapa: #8a8797; }
 .etapa-primeiro_contato { --cor-etapa: #3b78e7; }
