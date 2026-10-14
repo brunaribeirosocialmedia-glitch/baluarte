@@ -99,6 +99,86 @@
 
 .rodape-perigo { display: flex; justify-content: flex-end; }
 
+/* Jornada: cores das etapas */
+.etapa-a_contatar       { --cor-etapa: #8a8797; }
+.etapa-primeiro_contato { --cor-etapa: #3b78e7; }
+.etapa-em_conversa      { --cor-etapa: #7c5cd6; }
+.etapa-reuniao          { --cor-etapa: #b04fcf; }
+.etapa-proposta         { --cor-etapa: #c98700; }
+.etapa-negociacao       { --cor-etapa: #e0692b; }
+.etapa-fechado          { --cor-etapa: #1f9d61; }
+.etapa-perdido          { --cor-etapa: #8a8797; }
+[data-theme='escuro'] .etapa-a_contatar,
+[data-theme='escuro'] .etapa-perdido          { --cor-etapa: #a5a3b8; }
+[data-theme='escuro'] .etapa-primeiro_contato { --cor-etapa: #7aa7ff; }
+[data-theme='escuro'] .etapa-em_conversa      { --cor-etapa: #a98cff; }
+[data-theme='escuro'] .etapa-reuniao          { --cor-etapa: #d98af0; }
+[data-theme='escuro'] .etapa-proposta         { --cor-etapa: #f2b84b; }
+[data-theme='escuro'] .etapa-negociacao       { --cor-etapa: #ff9a62; }
+[data-theme='escuro'] .etapa-fechado          { --cor-etapa: #6fd6a2; }
+
+.select-etapa {
+  padding: 5px 28px 5px 12px; border-radius: 99px; font-size: 0.82rem; font-weight: 700;
+  color: var(--cor-etapa); border-color: color-mix(in srgb, var(--cor-etapa) 45%, transparent);
+  background-color: color-mix(in srgb, var(--cor-etapa) 12%, transparent);
+}
+
+/* Trilha de etapas no perfil */
+.trilha-etapas { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.trilha-etapas li { display: flex; align-items: center; gap: 6px; }
+.trilha-etapas li + li::before { content: '›'; color: var(--texto-suave); font-weight: 700; }
+.trilha-etapas li:last-child::before { content: '·'; }
+.trilha-etapas button {
+  padding: 6px 12px; border-radius: 99px; cursor: pointer; font: inherit; font-size: 0.84rem; font-weight: 600;
+  background: transparent; border: 1px solid var(--borda-forte); color: var(--texto-suave);
+}
+.trilha-etapas button:hover { border-color: var(--cor-etapa); color: var(--cor-etapa); }
+.trilha-etapas button.feita { color: var(--cor-etapa); border-color: color-mix(in srgb, var(--cor-etapa) 35%, transparent); }
+.trilha-etapas button.atual { color: var(--cor-etapa); border-color: var(--cor-etapa); background: color-mix(in srgb, var(--cor-etapa) 16%, transparent); font-weight: 800; }
+
+.resumo-jornada { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.resumo-jornada > div { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 10px; background: var(--realce); }
+.resumo-jornada span { font-size: 0.8rem; font-weight: 600; }
+.resumo-jornada strong { font-size: 1.05rem; }
+.resumo-jornada .prazo { font-size: inherit; }
+
+.etiqueta-contato { font-size: 0.72rem; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--destaque); color: var(--destaque-texto); }
+.linha-do-tempo li.eh-contato::before { background: var(--destaque); }
+
+/* Próximo contato */
+.proximo-contato { display: inline-flex; flex-direction: column; gap: 1px; }
+.proximo-contato small { font-size: 0.8rem; }
+.prazo.em-breve { color: var(--texto); }
+.linha-detalhe { display: block; font-size: 0.8rem; margin-top: 2px; }
+
+/* Lista / Quadro */
+.alternar-visao { display: inline-flex; padding: 3px; border-radius: 11px; background: var(--realce); border: 1px solid var(--borda); }
+.alternar-visao button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 0; border-radius: 8px;
+  background: transparent; color: var(--texto-suave); font: inherit; font-size: 0.86rem; font-weight: 600; cursor: pointer;
+}
+.alternar-visao button.ativo { background: var(--superficie); color: var(--texto); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+
+.numero-clicavel { text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.numero-clicavel:hover { border-color: var(--borda-forte); }
+.numero.com-alerta strong { color: var(--erro); }
+.filtro.com-alerta:not(.ativo) span { color: var(--erro); opacity: 1; font-weight: 800; }
+
+.quadro-prospects { padding: 0 0 16px; }
+.quadro-prospects .coluna { flex-basis: 250px; max-height: calc(100vh - 140px); }
+.quadro-prospects .coluna-cor { background: var(--cor-etapa); }
+.quadro-prospects .coluna-topo h3 { margin: 0; }
+.cartao-prospect { gap: 6px; }
+.cartao-prospect .cartao-tarefa-titulo { padding-right: 0; }
+.cartao-prospect > small { font-size: 0.8rem; }
+.cartao-prospect .selo-status { padding: 2px 9px; font-size: 0.72rem; }
+.valor-cartao { font-size: 0.85rem; color: var(--cor-etapa, inherit); }
+.passo-cartao { font-size: 0.8rem; color: var(--texto-suave); border-top: 1px dashed var(--borda); padding-top: 6px; }
+@media (max-width: 860px) {
+  .quadro-prospects { margin: 0 -16px; padding: 0 16px 16px; }
+  .quadro-prospects .coluna { flex-basis: 78vw; }
+}
+
 /* Celular: tabela vira lista de cartões */
 @media (max-width: 760px) {
   .tabela-rolagem:has(.tabela-prospects) { background: none; border: 0; box-shadow: none; }
@@ -117,4 +197,6 @@
   .tabela-prospects td:first-child { font-size: 1.02rem; }
   .tabela-prospects td:first-child::before { display: none; }
   .barra-lista .busca { flex: 1 1 100%; }
+  .tabela-prospects td:first-child { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .resumo-jornada { grid-template-columns: 1fr; }
 }

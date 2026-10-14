@@ -7,7 +7,7 @@ import { buscarMeta, competenciaDe, fechadoNoMes, ritmoEsperado } from '../lib/m
 import BarraMeta from '../components/BarraMeta'
 import Icone from '../components/Icone'
 import LegendaTarefas from '../components/LegendaTarefas'
-import { STATUS } from './prospeccao/comum'
+import { STATUS, encerrado, precisaContatar } from './prospeccao/comum'
 import { situacaoContrato } from './gestao/Contratos'
 import { situacaoDocumento } from './gestao/Documentos'
 import { seloVencimento } from './gestao/Obrigacoes'
@@ -185,14 +185,15 @@ function ResumoProspeccao() {
   useEffect(() => {
     const mes = competenciaDe()
     Promise.all([
-      supabase.from('prospects').select('status').is('valor_fechado', null),
+      supabase.from('prospects').select('id, empresa, status, etapa, valor_fechado, proximo_contato, proximo_passo').is('valor_fechado', null),
       buscarMeta('prospeccao', mes),
       fechadoNoMes(mes),
-    ]).then(([{ data }, meta, fechado]) => setDados({ abertos: data || [], meta, fechado }))
+    ]).then(([{ data }, meta, fechado]) => setDados({ abertos: (data || []).filter((p) => !encerrado(p)), meta, fechado }))
   }, [])
 
   if (!dados) return null
   const total = dados.abertos.length
+  const contatar = dados.abertos.filter(precisaContatar).sort((a, b) => a.proximo_contato.localeCompare(b.proximo_contato))
 
   return (
     <section className="cartao secao">
@@ -201,6 +202,27 @@ function ResumoProspeccao() {
       {dados.meta
         ? <BarraMeta atual={dados.fechado} meta={Number(dados.meta.valor)} esperado={ritmoEsperado(competenciaDe())} />
         : <SemMeta para="/prospeccao" />}
+
+      <h3 className="subtitulo-painel">Preciso contatar</h3>
+      {contatar.length === 0 ? (
+        <p className="texto-suave">Nenhum retorno para hoje.</p>
+      ) : (
+        <ul className="lista-pendencias">
+          {contatar.map((p) => (
+            <li key={p.id}>
+              <Link to={`/prospeccao/${p.id}`}>
+                <span className="pendencia-nome">{p.empresa}</span>
+                <span className="texto-suave pendencia-qtd">
+                  {p.proximo_passo && <>{p.proximo_passo} · </>}
+                  {p.proximo_contato < hojeISO()
+                    ? <span className="atrasado">atrasado desde {formatarData(p.proximo_contato)}</span>
+                    : 'hoje'}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <h3 className="subtitulo-painel">Funil em aberto</h3>
       {total === 0 ? (

@@ -4,12 +4,13 @@ import { supabase, traduzirErro } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { FORMAS_PAGAMENTO, formatarMoeda, lerMoeda, paraCampoMoeda } from '../../lib/moeda'
 import { CORES_CLIENTE } from '../../lib/cores'
-import { BotaoExcluir } from '../../components/Modal'
+import Modal, { BotaoExcluir } from '../../components/Modal'
 import Icone from '../../components/Icone'
 import BotaoSalvar, { useSalvar } from '../../components/BotaoSalvar'
-import { EscolhaStatus } from './comum'
+import { formatarData, hojeISO, paraISO } from '../../lib/datas'
+import { CANAIS, ETAPAS, EscolhaStatus, ProximoContato, TrilhaEtapas, encerrado } from './comum'
 
-const CAMPOS_TEXTO = ['empresa', 'responsavel', 'contato', 'servico_pretendido', 'data_pagamento', 'forma_pagamento']
+const CAMPOS_TEXTO = ['empresa', 'responsavel', 'contato', 'servico_pretendido', 'data_pagamento', 'forma_pagamento', 'proximo_contato', 'proximo_passo']
 
 function paraFormulario(p) {
   return {
@@ -17,7 +18,10 @@ function paraFormulario(p) {
     responsavel: p.responsavel || '',
     contato: p.contato || '',
     status: p.status,
-    data_primeiro_contato: p.data_primeiro_contato,
+    etapa: p.etapa,
+    data_primeiro_contato: p.data_primeiro_contato || '',
+    proximo_contato: p.proximo_contato || '',
+    proximo_passo: p.proximo_passo || '',
     servico_pretendido: p.servico_pretendido || '',
     valor_estimado: paraCampoMoeda(p.valor_estimado),
     valor_fechado: paraCampoMoeda(p.valor_fechado),
@@ -26,7 +30,7 @@ function paraFormulario(p) {
   }
 }
 
-function Anotacoes({ prospectId }) {
+function Anotacoes({ prospectId, versao }) {
   const { session } = useAuth()
   const [lista, setLista] = useState(null)
   const [pessoas, setPessoas] = useState({})
@@ -39,8 +43,9 @@ function Anotacoes({ prospectId }) {
     setLista(data || [])
   }, [prospectId])
 
+  useEffect(() => { carregar() }, [carregar, versao])
+
   useEffect(() => {
-    carregar()
     supabase.from('perfis').select('id, nome, email').then(({ data }) =>
       setPessoas(Object.fromEntries((data || []).map((p) => [p.id, p.nome || p.email]))))
   }, [carregar])
@@ -62,7 +67,7 @@ function Anotacoes({ prospectId }) {
 
   return (
     <section className="cartao secao">
-      <h2>Anotações</h2>
+      <h2>Histórico</h2>
       <form className="formulario" onSubmit={adicionar}>
         <textarea
           rows={3}
@@ -77,11 +82,14 @@ function Anotacoes({ prospectId }) {
       {lista?.length === 0 && <p className="texto-suave">Nenhuma anotação ainda.</p>}
       <ol className="linha-do-tempo">
         {lista?.map((a) => (
-          <li key={a.id}>
+          <li key={a.id} className={a.canal ? 'eh-contato' : ''}>
             <div className="linha-do-tempo-topo">
+              {a.canal && <span className="etiqueta-contato">Contato · {CANAIS[a.canal]}</span>}
               <strong>{pessoas[a.autor_id] || 'Alguém da equipe'}</strong>
               <span className="texto-suave">
-                {new Date(a.criado_em).toLocaleString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                {a.contato_em && a.contato_em !== paraISO(new Date(a.criado_em))
+                  ? formatarData(a.contato_em, { day: '2-digit', month: 'short', year: 'numeric' })
+                  : new Date(a.criado_em).toLocaleString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </span>
               {a.autor_id === session.user.id && (
                 <button className="botao-icone mini" onClick={() => excluir(a.id)} aria-label="Excluir anotação" title="Excluir">
@@ -97,6 +105,117 @@ function Anotacoes({ prospectId }) {
   )
 }
 
+function proximaEtapa(etapa) {
+  const ordem = Object.keys(ETAPAS)
+  return ['fechado', 'perdido', 'negociacao'].includes(etapa) ? etapa : ordem[ordem.indexOf(etapa) + 1]
+}
+
+function daquiA(dias) {
+  const d = new Date()
+  d.setDate(d.getDate() + dias)
+  return paraISO(d)
+}
+
+function RegistrarContato({ prospect, aoFechar, aoRegistrar }) {
+  const [form, setForm] = useState({
+    canal: 'whatsapp',
+    contato_em: hojeISO(),
+    texto: '',
+    etapa: prospect.etapa === 'a_contatar' ? 'primeiro_contato' : prospect.etapa,
+    proximo_contato: '',
+    proximo_passo: '',
+  })
+  const [erro, setErro] = useState('')
+  const [salvando, setSalvando] = useState(false)
+  const campo = (nome) => ({ value: form[nome], onChange: (e) => setForm({ ...form, [nome]: e.target.value }) })
+
+  async function salvar(e) {
+    e.preventDefault()
+    setErro('')
+    setSalvando(true)
+    const { error } = await supabase.from('prospect_anotacoes').insert({
+      prospect_id: prospect.id,
+      canal: form.canal,
+      contato_em: form.contato_em,
+      texto: form.texto.trim() || `Contato por ${CANAIS[form.canal]}.`,
+    })
+    if (error) { setSalvando(false); return setErro(traduzirErro(error)) }
+    const encerra = ['fechado', 'perdido'].includes(form.etapa)
+    const { data, error: erro2 } = await supabase.from('prospects').update({
+      etapa: form.etapa,
+      proximo_contato: encerra ? null : form.proximo_contato || null,
+      proximo_passo: encerra ? null : form.proximo_passo.trim() || null,
+    }).eq('id', prospect.id).select('*, clientes(id, nome)').single()
+    setSalvando(false)
+    if (erro2) return setErro(traduzirErro(erro2))
+    aoRegistrar(data)
+  }
+
+  const seguinte = proximaEtapa(form.etapa)
+
+  return (
+    <Modal
+      titulo={`Contato com ${prospect.empresa}`}
+      aoFechar={aoFechar}
+      largura={560}
+      rodape={
+        <>
+          <span className="espaco" />
+          <button type="button" className="botao botao-secundario" onClick={aoFechar}>Cancelar</button>
+          <button type="submit" form="form-contato" className="botao botao-principal" disabled={salvando || !form.contato_em}>Registrar</button>
+        </>
+      }
+    >
+      <form id="form-contato" className="formulario" onSubmit={salvar}>
+        <div className="campo">
+          <span>Por onde</span>
+          <div className="filtros-status" role="radiogroup" aria-label="Canal">
+            {Object.entries(CANAIS).map(([v, nome]) => (
+              <button key={v} type="button" role="radio" aria-checked={form.canal === v}
+                className={`filtro ${form.canal === v ? 'ativo' : ''}`}
+                onClick={() => setForm({ ...form, canal: v })}>
+                {nome}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="grade-campos">
+          <label className="campo"><span>Quando</span><input type="date" {...campo('contato_em')} max={hojeISO()} required /></label>
+          <label className="campo">
+            <span>Etapa depois deste contato</span>
+            <select {...campo('etapa')}>
+              {Object.entries(ETAPAS).map(([v, n]) => <option key={v} value={v}>{n}</option>)}
+            </select>
+            {seguinte !== form.etapa && (
+              <button type="button" className="botao-link alinhar-inicio" onClick={() => setForm({ ...form, etapa: seguinte })}>
+                Avançar para “{ETAPAS[seguinte]}”
+              </button>
+            )}
+          </label>
+        </div>
+        <label className="campo">
+          <span>Como foi</span>
+          <textarea rows={3} placeholder="O que conversaram, objeções, interesse…" {...campo('texto')} />
+        </label>
+        {!['fechado', 'perdido'].includes(form.etapa) && (
+          <>
+            <div className="grade-campos">
+              <label className="campo"><span>Retomar em</span><input type="date" {...campo('proximo_contato')} min={hojeISO()} /></label>
+              <label className="campo"><span>Próximo passo</span><input {...campo('proximo_passo')} placeholder="Mandar proposta, cobrar resposta…" /></label>
+            </div>
+            <div className="filtros-status">
+              {[[2, 'Em 2 dias'], [7, 'Em 1 semana'], [15, 'Em 15 dias'], [30, 'Em 1 mês']].map(([d, n]) => (
+                <button key={d} type="button" className={`filtro ${form.proximo_contato === daquiA(d) ? 'ativo' : ''}`} onClick={() => setForm({ ...form, proximo_contato: daquiA(d) })}>{n}</button>
+              ))}
+            </div>
+          </>
+        )}
+        {erro && <p className="alerta alerta-erro">{erro}</p>}
+      </form>
+    </Modal>
+  )
+}
+
 export default function PerfilProspect() {
   const { prospectId } = useParams()
   const navigate = useNavigate()
@@ -105,6 +224,8 @@ export default function PerfilProspect() {
   const [form, setForm] = useState(null)
   const [erro, setErro] = useState('')
   const [aviso, setAviso] = useState('')
+  const [registrando, setRegistrando] = useState(false)
+  const [versaoHistorico, setVersaoHistorico] = useState(0)
   const { estado: estadoSalvar, rodar } = useSalvar()
 
   useEffect(() => {
@@ -143,7 +264,8 @@ export default function PerfilProspect() {
 
     const dados = {
       status: form.status,
-      data_primeiro_contato: form.data_primeiro_contato,
+      etapa: form.etapa,
+      data_primeiro_contato: form.data_primeiro_contato || null,
       valor_estimado: valorEstimado,
       valor_fechado: valorFechado,
       ...Object.fromEntries(CAMPOS_TEXTO.map((k) => [k, form[k].trim() || null])),
@@ -154,6 +276,16 @@ export default function PerfilProspect() {
     setForm(paraFormulario(data))
     setAviso('Alterações salvas.')
     return true
+  }
+
+  function contatoRegistrado(data) {
+    const jornada = ['etapa', 'data_primeiro_contato', 'proximo_contato', 'proximo_passo']
+    const novo = paraFormulario(data)
+    setProspect(data)
+    setForm((f) => ({ ...f, ...Object.fromEntries(jornada.map((k) => [k, novo[k]])) }))
+    setRegistrando(false)
+    setVersaoHistorico((v) => v + 1)
+    setAviso('Contato registrado.')
   }
 
   async function virarCliente() {
@@ -190,16 +322,42 @@ export default function PerfilProspect() {
 
       <form className="perfil-prospect" onSubmit={salvar}>
         <section className="cartao secao">
-          <h2>Dados do prospect</h2>
+          <div className="linha-topo">
+            <h2>Jornada</h2>
+            <button type="button" className="botao botao-principal botao-pequeno" onClick={() => setRegistrando(true)}>
+              <Icone nome="comentario" tamanho={16} /> Registrei um contato
+            </button>
+          </div>
+          <TrilhaEtapas valor={form.etapa} onChange={(etapa) => { setForm({ ...form, etapa }); setAviso('') }} />
+          <div className="resumo-jornada">
+            <div>
+              <span className="texto-suave">Último contato</span>
+              <strong>{prospect.ultimo_contato ? formatarData(prospect.ultimo_contato, { day: '2-digit', month: 'short', year: 'numeric' }) : 'Nunca'}</strong>
+            </div>
+            <div>
+              <span className="texto-suave">Próximo contato</span>
+              <strong>{encerrado(prospect) ? '—' : <ProximoContato prospect={prospect} comPasso={false} />}</strong>
+            </div>
+          </div>
+          {!['fechado', 'perdido'].includes(form.etapa) && (
+            <div className="grade-campos">
+              <label className="campo"><span>Retomar em</span><input type="date" {...campo('proximo_contato')} /></label>
+              <label className="campo"><span>Próximo passo</span><input {...campo('proximo_passo')} placeholder="Mandar proposta, cobrar resposta…" /></label>
+            </div>
+          )}
           <div className="campo">
-            <span>Status</span>
+            <span>Temperatura</span>
             <EscolhaStatus valor={form.status} onChange={(status) => setForm({ ...form, status })} />
           </div>
+        </section>
+
+        <section className="cartao secao">
+          <h2>Dados do prospect</h2>
           <div className="grade-campos">
             <label className="campo"><span>Nome da empresa</span><input {...campo('empresa')} required /></label>
             <label className="campo"><span>Nome do responsável</span><input {...campo('responsavel')} /></label>
             <label className="campo"><span>Contato</span><input {...campo('contato')} /></label>
-            <label className="campo"><span>Data do primeiro contato</span><input type="date" {...campo('data_primeiro_contato')} required /></label>
+            <label className="campo"><span>Data do primeiro contato</span><input type="date" {...campo('data_primeiro_contato')} /></label>
           </div>
           <label className="campo"><span>Serviço pretendido</span><input {...campo('servico_pretendido')} /></label>
         </section>
@@ -236,7 +394,9 @@ export default function PerfilProspect() {
         </div>
       </form>
 
-      <Anotacoes prospectId={prospect.id} />
+      <Anotacoes prospectId={prospect.id} versao={versaoHistorico} />
+
+      {registrando && <RegistrarContato prospect={prospect} aoFechar={() => setRegistrando(false)} aoRegistrar={contatoRegistrado} />}
 
       <section className="cartao secao">
         <h2>Área do Cliente</h2>
