@@ -41,7 +41,7 @@ export function BotaoExcluir({ aoConfirmar, texto = 'Excluir' }) {
   return (
     <button
       type="button"
-      className={`botao ${confirmando ? 'botao-perigo' : 'botao-fantasma'}`}
+      className={`botao ${confirmando ? 'botao-perigo' : 'botao-fantasma perigo'}`}
       onClick={() => (confirmando ? aoConfirmar() : setConfirmando(true))}
     >
       {confirmando ? 'Clique de novo para confirmar' : texto}

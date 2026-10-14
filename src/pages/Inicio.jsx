@@ -371,7 +371,7 @@ export default function Inicio() {
     <div className="pagina pagina-larga">
       <header className="pagina-topo">
         <p className="sobretitulo">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-        <h1>{saudacao()}{primeiroNome ? `, ${primeiroNome}` : ''}.</h1>
+        <h1>{saudacao()}{primeiroNome ? `, ${primeiroNome}` : ''}</h1>
       </header>
 
       {permissoes.financeiro_liberado && <AvisosGestao />}

@@ -68,7 +68,7 @@ export default function ArquivoAnexo({ bucket, tabela, id, arquivo, aoMudar, aoE
             </button>
             <span className="espaco" />
             <label className="botao botao-secundario botao-pequeno">{enviando ? 'Enviando…' : 'Trocar'}{seletor}</label>
-            <button type="button" className="botao botao-fantasma botao-pequeno" onClick={remover}>Remover</button>
+            <button type="button" className="botao botao-fantasma perigo botao-pequeno" onClick={remover}>Remover</button>
           </>
         ) : (
           <label className="botao botao-secundario botao-pequeno">

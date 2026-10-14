@@ -8,7 +8,8 @@
 .linha-topo { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .botao-pequeno { padding: 7px 12px; font-size: 0.88rem; }
 .botao-perigo { background: var(--erro); color: #fff; }
-.botao-fantasma { background: transparent; color: var(--erro); padding-left: 4px; padding-right: 4px; }
+.botao-fantasma { background: transparent; color: var(--texto); padding-left: 4px; padding-right: 4px; }
+.botao-fantasma.perigo { color: var(--erro); } /* só excluir/remover fica vermelho */
 .botao-fantasma:hover { text-decoration: underline; }
 .botao-icone.mini { width: 28px; height: 28px; border-radius: 8px; }
 .botao-icone:disabled { opacity: 0.3; cursor: default; }
