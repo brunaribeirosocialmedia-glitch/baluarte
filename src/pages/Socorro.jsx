@@ -488,7 +488,7 @@ function EstiloSocorro() {
       .socorro-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
       .socorro-cat, .socorro-nicho { font-size: 11px; letter-spacing: .04em; padding: 3px 9px; border-radius: 999px; }
       .socorro-cat { background: #EEF0F6; color: #4A6FA5; }
-      .socorro-nicho { background: var(--cinza-claro, #E1E1E1); color: var(--texto, #040022); }
+      .socorro-nicho { background: none; color: var(--texto-suave); padding-left: 0; padding-right: 0; }
       .socorro-acoes { display: flex; gap: 4px; flex-shrink: 0; }
       .socorro-conteudo { white-space: pre-wrap; line-height: 1.6; font-size: 14.5px; margin: 14px 0 0; color: var(--texto, #1b1733); }
 
