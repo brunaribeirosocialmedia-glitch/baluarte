@@ -2,16 +2,6 @@ import { FORMAS_PAGAMENTO } from '../../lib/moeda'
 
 export const STATUS_LANCAMENTO = { pendente: 'Pendente', pago: 'Pago', cancelado: 'Cancelado' }
 
-export const CATEGORIAS_VARIAVEIS = {
-  ia: 'IA',
-  freelancer: 'Freelancer',
-  impulsionamento: 'Impulsionamento',
-  producao: 'Produção',
-  software: 'Software',
-  deslocamento: 'Deslocamento',
-  outro: 'Outro',
-}
-
 const opcoesClientes = (apoio) => Object.fromEntries(apoio.clientes.map((c) => [c.id, c.nome]))
 const opcoesEntregas = (apoio) => Object.fromEntries(apoio.entregas.map((e) => [e.id, e.descricao]))
 
@@ -79,7 +69,8 @@ export const SECOES = {
     rotuloMarcar: 'Marcar pago',
     campos: [
       { chave: 'descricao', rotulo: 'Descrição', tipo: 'texto', obrigatorio: true, largura: 'toda', dica: 'Imagens do carrossel, créditos de vídeo…' },
-      { chave: 'categoria', rotulo: 'Categoria', tipo: 'select', opcoes: () => CATEGORIAS_VARIAVEIS, obrigatorio: true },
+      { chave: 'categoria', rotulo: 'Categoria', tipo: 'categoria', tabela: 'fin_categorias_custo_variavel', obrigatorio: true,
+        extra: { chave: 'conta_como_ia', rotulo: 'Conta como gasto com IA (Visão geral e custo da entrega)', curto: 'IA' } },
       { chave: 'ferramenta', rotulo: 'Ferramenta', tipo: 'texto', sugestoes: ['ChatGPT', 'Claude', 'Midjourney', 'Canva', 'CapCut', 'ElevenLabs', 'Runway'] },
       { chave: 'valor', rotulo: 'Valor', tipo: 'moeda', obrigatorio: true },
       { chave: 'data', rotulo: 'Data', tipo: 'data' },
@@ -88,7 +79,7 @@ export const SECOES = {
       { chave: 'status', rotulo: 'Status', tipo: 'status' },
       { chave: 'observacoes', rotulo: 'Observações', tipo: 'area', largura: 'toda' },
     ],
-    padrao: { status: 'pago', categoria: 'ia' },
+    padrao: { status: 'pago', categoria: 'IA' },
     colunas: ['descricao', 'categoria', 'entrega_id', 'status', 'valor'],
   },
 

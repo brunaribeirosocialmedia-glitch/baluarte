@@ -7,7 +7,7 @@ import Modal, { BotaoExcluir } from '../../components/Modal'
 import Icone from '../../components/Icone'
 import BotaoSalvar, { pausaParaVer, useSalvar } from '../../components/BotaoSalvar'
 import { nomeMes, somarMeses, useFinanceiro } from './Financeiro'
-import { CATEGORIAS_VARIAVEIS, ROTULOS_COLUNA, SECOES, STATUS_LANCAMENTO } from './secoes'
+import { ROTULOS_COLUNA, SECOES, STATUS_LANCAMENTO } from './secoes'
 import CampoCategoria from './CampoCategoria'
 
 // Move uma data AAAA-MM-DD um mês para frente (31/jan → 28/fev)
@@ -120,7 +120,7 @@ export function FormularioLancamento({ config, item, apoio, competencia, aoFecha
               return (
                 <div key={c.chave} className="campo">
                   <span>{c.rotulo}</span>
-                  <CampoCategoria tabela={c.tabela} valor={form[c.chave]} onChange={(v) => definir(c.chave, v)} />
+                  <CampoCategoria tabela={c.tabela} extra={c.extra} valor={form[c.chave]} onChange={(v) => definir(c.chave, v)} />
                 </div>
               )
             } else if (c.tipo === 'marcar') {
@@ -157,7 +157,7 @@ function valorCelula(chave, item, apoio) {
     case 'status': return <SeloLancamento status={item.status} />
     case 'cliente_id': return apoio.clientes.find((c) => c.id === item.cliente_id)?.nome || <span className="texto-suave">—</span>
     case 'entrega_id': return apoio.entregas.find((e) => e.id === item.entrega_id)?.descricao || <span className="texto-suave">Geral</span>
-    case 'categoria': return CATEGORIAS_VARIAVEIS[item.categoria] || item.categoria || <span className="texto-suave">—</span>
+    case 'categoria': return item.categoria || <span className="texto-suave">—</span>
     case 'tipo': return item.tipo === 'fixo' ? 'Fixo mensal' : 'Por entrega'
     case 'descricao_fixa': return <strong>Pró-labore</strong>
     case 'descricao': return <strong>{item.descricao || '—'}</strong>
