@@ -343,7 +343,7 @@ export default function Contratos() {
       {ativos.length === 0 ? (
         <div className="cartao vazio recuo">
           <p>Nenhum contrato ativo ainda.</p>
-          <p>Quando um prospect vira cliente na Prospecção, o contrato aparece aqui sozinho. Para clientes antigos, use “Novo contrato”.</p>
+          <p>Quando um prospect vira cliente no Comercial, o contrato aparece aqui sozinho. Para clientes antigos, use “Novo contrato”.</p>
         </div>
       ) : tabela(ativos)}
 

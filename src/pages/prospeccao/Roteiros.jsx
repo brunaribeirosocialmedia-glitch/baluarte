@@ -1,7 +1,7 @@
 import { Biblioteca } from '../Socorro'
 import { AbasProspeccao } from './comum'
 
-// Exemplos de mensagens e estilos de abordagem; só quem tem a Prospecção liberada vê
+// Exemplos de mensagens e estilos de abordagem; só quem tem o Comercial liberado vê
 export default function Roteiros() {
   return (
     <Biblioteca

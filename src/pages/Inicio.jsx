@@ -197,11 +197,11 @@ function ResumoProspeccao() {
 
   return (
     <section className="cartao secao">
-      <div className="linha-topo"><h2>Prospecção</h2><Link to="/prospeccao" className="botao-link">Abrir</Link></div>
+      <div className="linha-topo"><h2>Comercial</h2><Link to="/comercial" className="botao-link">Abrir</Link></div>
       <h3 className="subtitulo-painel">Fechamentos do mês</h3>
       {dados.meta
         ? <BarraMeta atual={dados.fechado} meta={Number(dados.meta.valor)} esperado={ritmoEsperado(competenciaDe())} />
-        : <SemMeta para="/prospeccao" />}
+        : <SemMeta para="/comercial" />}
 
       <h3 className="subtitulo-painel">Preciso contatar</h3>
       {contatar.length === 0 ? (
@@ -210,7 +210,7 @@ function ResumoProspeccao() {
         <ul className="lista-pendencias">
           {contatar.map((p) => (
             <li key={p.id}>
-              <Link to={`/prospeccao/${p.id}`}>
+              <Link to={`/comercial/${p.id}`}>
                 <span className="pendencia-nome">{p.empresa}</span>
                 <span className="texto-suave pendencia-qtd">
                   {p.proximo_passo && <>{p.proximo_passo} · </>}

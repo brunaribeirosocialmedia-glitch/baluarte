@@ -24,7 +24,7 @@ export function salvarMeta(area, competencia, valor) {
   return supabase.from('metas').upsert({ area, competencia, valor })
 }
 
-// Soma do valor fechado na Prospecção dentro do mês
+// Soma do valor fechado no Comercial dentro do mês
 export async function fechadoNoMes(competencia) {
   const { data } = await supabase.from('prospects').select('valor_fechado')
     .gte('fechado_em', competencia).lt('fechado_em', proximoMes(competencia))

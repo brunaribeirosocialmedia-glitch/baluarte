@@ -59,8 +59,8 @@ export function ProximoContato({ prospect, comPasso = true }) {
 export function AbasProspeccao() {
   return (
     <nav className="abas abas-prospeccao">
-      <NavLink to="/prospeccao" end className="aba">Pipeline</NavLink>
-      <NavLink to="/prospeccao/roteiros" className="aba">Roteiros</NavLink>
+      <NavLink to="/comercial" end className="aba">Pipeline</NavLink>
+      <NavLink to="/comercial/roteiros" className="aba">Roteiros</NavLink>
     </nav>
   )
 }

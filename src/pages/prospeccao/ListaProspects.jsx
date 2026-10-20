@@ -260,7 +260,7 @@ export default function ListaProspects() {
       <AbasProspeccao />
       <header className="pagina-topo linha-topo">
         <div>
-          <h1>Prospecção</h1>
+          <h1>Comercial</h1>
           <p className="texto-suave">Pipeline de vendas da B Mídia.</p>
         </div>
         <button className="botao botao-principal" onClick={() => setCriando(true)}>

@@ -33,6 +33,12 @@ import Socorro from './pages/Socorro'
 import Processos from './pages/Processos'
 
 // Links antigos (#/financeiro/...) continuam funcionando
+// /prospeccao virou /comercial (20/10/2026): links antigos continuam abrindo
+function RedirecionarProspeccao() {
+  const { pathname, search } = useLocation()
+  return <Navigate to={pathname.replace('/prospeccao', '/comercial') + search} replace />
+}
+
 function RedirecionarFinanceiro() {
   const { pathname, search } = useLocation()
   return <Navigate to={pathname.replace('/financeiro', '/gestao/financeiro') + search} replace />
@@ -93,7 +99,7 @@ function AppAutenticado() {
             <Route path="quadro" element={<Suspense fallback={<p className="texto-suave recuo">Carregando o quadro…</p>}><QuadroBranco /></Suspense>} />
             <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
-          <Route path="prospeccao" element={<AreaProtegida area="prospeccao"><Outlet /></AreaProtegida>}>
+          <Route path="comercial" element={<AreaProtegida area="prospeccao"><Outlet /></AreaProtegida>}>
             <Route index element={<ListaProspects />} />
             <Route path="roteiros" element={<Roteiros />} />
             <Route path=":prospectId" element={<PerfilProspect />} />
@@ -114,6 +120,7 @@ function AppAutenticado() {
             <Route path="precificacao" element={<Navigate to="/gestao/esteira" replace />} />
             <Route path="metas" element={<MetasGestao />} />
           </Route>
+          <Route path="prospeccao/*" element={<RedirecionarProspeccao />} />
           <Route path="financeiro/*" element={<RedirecionarFinanceiro />} />
           <Route path="caixa-de-pandora" element={<Socorro />} />
           <Route path="socorro" element={<Navigate to="/caixa-de-pandora" replace />} />

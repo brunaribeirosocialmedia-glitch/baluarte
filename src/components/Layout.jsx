@@ -24,7 +24,7 @@ export default function Layout() {
     { para: '/caixa-de-pandora', nome: 'Caixa de Pandora', icone: 'ideia' },
     { para: '/processos', nome: 'Processos', icone: 'checklist' },
     permissoes.pode_prospeccao && {
-      para: '/prospeccao', nome: 'Prospecção', icone: 'prospeccao', trancada: !permissoes.prospeccao_liberada,
+      para: '/comercial', nome: 'Comercial', icone: 'prospeccao', trancada: !permissoes.prospeccao_liberada,
     },
     permissoes.pode_financeiro && {
       para: '/gestao', nome: 'Gestão', icone: 'financeiro', trancada: !permissoes.financeiro_liberado,

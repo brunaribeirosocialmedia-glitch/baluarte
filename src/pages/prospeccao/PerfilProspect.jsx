@@ -193,7 +193,7 @@ function RegistrarContato({ prospect, aoFechar, aoRegistrar }) {
             )}
           </label>
         </div>
-        <a className="botao-link alinhar-inicio" href="#/prospeccao/roteiros" target="_blank" rel="noreferrer">
+        <a className="botao-link alinhar-inicio" href="#/comercial/roteiros" target="_blank" rel="noreferrer">
           Abrir os roteiros de mensagem (em outra aba)
         </a>
         <label className="campo">
@@ -244,7 +244,7 @@ export default function PerfilProspect() {
       <div className="pagina">
         <div className="cartao vazio">
           <p>Prospect não encontrado.</p>
-          <Link className="botao botao-secundario" to="/prospeccao">Voltar para a Prospecção</Link>
+          <Link className="botao botao-secundario" to="/comercial">Voltar para o Comercial</Link>
         </div>
       </div>
     )
@@ -304,14 +304,14 @@ export default function PerfilProspect() {
   async function excluir() {
     const { error } = await supabase.from('prospects').delete().eq('id', prospect.id)
     if (error) return setErro(traduzirErro(error))
-    navigate('/prospeccao')
+    navigate('/comercial')
   }
 
   const fechado = prospect.valor_fechado != null
 
   return (
     <div className="pagina">
-      <Link to="/prospeccao" className="migalha"><Icone nome="voltar" tamanho={16} /> Prospecção</Link>
+      <Link to="/comercial" className="migalha"><Icone nome="voltar" tamanho={16} /> Comercial</Link>
 
       <header className="pagina-topo linha-topo">
         <div>
