@@ -166,3 +166,15 @@
 /* Gestão · Documentos */
 .grupo-documentos + .grupo-documentos { margin-top: 24px; }
 .acoes-linha .botao-link { display: inline-flex; align-items: center; gap: 4px; }
+
+/* Categoria do custo fixo: botão com cara de campo, abre a lista (criar, renomear, excluir) */
+.campo-categoria {
+  width: 100%; display: flex; align-items: center; gap: 4px; text-align: left; cursor: pointer;
+  padding: 11px 34px 11px 14px; border: 1px solid var(--borda-forte); border-radius: 10px;
+  background: var(--superficie-2); color: var(--texto); font: inherit; position: relative;
+}
+.campo-categoria::after {
+  content: ''; position: absolute; right: 12px; top: 50%; width: 7px; height: 7px; margin-top: -5px;
+  border-right: 2px solid var(--texto-suave); border-bottom: 2px solid var(--texto-suave); transform: rotate(45deg);
+}
+.campo-categoria:focus-visible { outline: none; border-color: var(--texto); box-shadow: 0 0 0 3px var(--realce); }

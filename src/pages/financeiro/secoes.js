@@ -57,7 +57,7 @@ export const SECOES = {
     repetir: (item) => item.recorrente,
     campos: [
       { chave: 'descricao', rotulo: 'Descrição', tipo: 'texto', obrigatorio: true, largura: 'toda', dica: 'Canva, contador, internet…' },
-      { chave: 'categoria', rotulo: 'Categoria', tipo: 'texto', sugestoes: ['Software', 'Contabilidade', 'Internet e telefone', 'Aluguel', 'Equipamentos', 'Impostos', 'Outros'] },
+      { chave: 'categoria', rotulo: 'Categoria', tipo: 'categoria', tabela: 'fin_categorias_custo_fixo' },
       { chave: 'valor', rotulo: 'Valor', tipo: 'moeda', obrigatorio: true },
       { chave: 'data_vencimento', rotulo: 'Vencimento', tipo: 'data' },
       { chave: 'data_pagamento', rotulo: 'Pago em', tipo: 'data' },

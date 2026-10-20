@@ -8,6 +8,7 @@ import Icone from '../../components/Icone'
 import BotaoSalvar, { pausaParaVer, useSalvar } from '../../components/BotaoSalvar'
 import { nomeMes, somarMeses, useFinanceiro } from './Financeiro'
 import { CATEGORIAS_VARIAVEIS, ROTULOS_COLUNA, SECOES, STATUS_LANCAMENTO } from './secoes'
+import CampoCategoria from './CampoCategoria'
 
 // Move uma data AAAA-MM-DD um mês para frente (31/jan → 28/fev)
 function proximoMes(data) {
@@ -113,6 +114,14 @@ export function FormularioLancamento({ config, item, apoio, competencia, aoFecha
                   {!c.obrigatorio && <option value="">{c.vazio || '—'}</option>}
                   {Object.entries(opcoes).map(([v, n]) => <option key={v} value={v}>{n}</option>)}
                 </select>
+              )
+            } else if (c.tipo === 'categoria') {
+              // lista da Bruna no banco: escolher, criar, renomear e excluir (div, não label: tem botões dentro)
+              return (
+                <div key={c.chave} className="campo">
+                  <span>{c.rotulo}</span>
+                  <CampoCategoria tabela={c.tabela} valor={form[c.chave]} onChange={(v) => definir(c.chave, v)} />
+                </div>
               )
             } else if (c.tipo === 'marcar') {
               return (
