@@ -7,7 +7,7 @@ import Modal from '../../components/Modal'
 import Icone from '../../components/Icone'
 import CartaoMeta from '../../components/CartaoMeta'
 import { competenciaDe, proximoMes } from '../../lib/metas'
-import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, STATUS, SeloStatus, encerrado, fechado, precisaContatar } from './comum'
+import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, STATUS, SeloStatus, emPosVenda, encerrado, fechado, precisaContatar } from './comum'
 
 // Datas vazias vão para o fim em qualquer ordenação por data
 const porData = (campo, sentido) => (a, b) => {
@@ -180,7 +180,7 @@ function Quadro({ prospects, aoAbrir, aoMover }) {
 
 export default function ListaProspects() {
   const navigate = useNavigate()
-  const [prospects, setProspects] = useState(null)
+  const [todos, setTodos] = useState(null)
   const [erro, setErro] = useState('')
   const [filtro, setFiltro] = useState('')          // '' | contatar | frio | morno | quente | fechados | perdidos
   const [etapa, setEtapa] = useState('')
@@ -192,9 +192,12 @@ export default function ListaProspects() {
   useEffect(() => {
     supabase.from('prospects').select('*').then(({ data, error }) => {
       if (error) setErro(traduzirErro(error))
-      setProspects(data || [])
+      setTodos(data || [])
     })
   }, [])
+
+  // Quem está no Pós-venda sai do Pipeline (mas o fechamento continua contando na meta)
+  const prospects = useMemo(() => todos && todos.filter((p) => !emPosVenda(p)), [todos])
 
   function trocarVisao(v) {
     setVisao(v)
@@ -207,7 +210,7 @@ export default function ListaProspects() {
     const abertos = lista.filter((p) => !encerrado(p))
     const fechados = lista.filter(fechado)
     return {
-      fechadoNoMes: lista
+      fechadoNoMes: (todos || [])
         .filter((p) => p.fechado_em >= mes && p.fechado_em < proximoMes(mes))
         .reduce((soma, p) => soma + Number(p.valor_fechado || 0), 0),
       total: lista.length,
@@ -219,7 +222,7 @@ export default function ListaProspects() {
       perdidos: lista.filter((p) => p.etapa === 'perdido' && !fechado(p)).length,
       valorFechado: lista.reduce((soma, p) => soma + Number(p.valor_fechado || 0), 0),
     }
-  }, [prospects, mes])
+  }, [todos, prospects, mes])
 
   const buscados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
@@ -239,11 +242,11 @@ export default function ListaProspects() {
     .sort(ORDENACOES[ordem].fn), [buscados, filtro, etapa, ordem])
 
   async function atualizar(p, mudanca) {
-    setProspects((atual) => atual.map((x) => (x.id === p.id ? { ...x, ...mudanca } : x)))
+    setTodos((atual) => atual.map((x) => (x.id === p.id ? { ...x, ...mudanca } : x)))
     const { error } = await supabase.from('prospects').update(mudanca).eq('id', p.id)
     if (error) {
       setErro(traduzirErro(error))
-      setProspects((atual) => atual.map((x) => (x.id === p.id ? p : x)))
+      setTodos((atual) => atual.map((x) => (x.id === p.id ? p : x)))
     }
   }
 

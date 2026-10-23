@@ -8,9 +8,11 @@ import Modal, { BotaoExcluir } from '../../components/Modal'
 import Icone from '../../components/Icone'
 import BotaoSalvar, { useSalvar } from '../../components/BotaoSalvar'
 import { formatarData, hojeISO, paraISO } from '../../lib/datas'
-import { CANAIS, ETAPAS, EscolhaStatus, ProximoContato, TrilhaEtapas, encerrado } from './comum'
+import { CANAIS, ETAPAS, EscolhaStatus, ProximoContato, TrilhaEtapas, emPosVenda, encerrado, fechado as estaFechado } from './comum'
+import { EscolhaMotivo, ModalPosVenda, RETOMAR_POS_VENDA, SeloMotivo, daquiAMeses } from './PosVenda'
 
-const CAMPOS_TEXTO = ['empresa', 'responsavel', 'contato', 'servico_pretendido', 'data_pagamento', 'forma_pagamento', 'proximo_contato', 'proximo_passo']
+const CAMPOS_TEXTO = ['empresa', 'responsavel', 'contato', 'servico_pretendido', 'data_pagamento', 'forma_pagamento', 'proximo_contato', 'proximo_passo',
+  'pos_venda_motivo', 'pos_venda_comprou', 'pos_venda_desde']
 
 function paraFormulario(p) {
   return {
@@ -27,6 +29,9 @@ function paraFormulario(p) {
     valor_fechado: paraCampoMoeda(p.valor_fechado),
     data_pagamento: p.data_pagamento || '',
     forma_pagamento: p.forma_pagamento || '',
+    pos_venda_motivo: p.pos_venda_motivo || '',
+    pos_venda_comprou: p.pos_venda_comprou || '',
+    pos_venda_desde: p.pos_venda_desde || '',
   }
 }
 
@@ -140,7 +145,7 @@ function RegistrarContato({ prospect, aoFechar, aoRegistrar }) {
       texto: form.texto.trim() || `Contato por ${CANAIS[form.canal]}.`,
     })
     if (error) { setSalvando(false); return setErro(traduzirErro(error)) }
-    const encerra = ['fechado', 'perdido'].includes(form.etapa)
+    const encerra = !emPosVenda(prospect) && ['fechado', 'perdido'].includes(form.etapa)
     const { data, error: erro2 } = await supabase.from('prospects').update({
       etapa: form.etapa,
       proximo_contato: encerra ? null : form.proximo_contato || null,
@@ -152,6 +157,11 @@ function RegistrarContato({ prospect, aoFechar, aoRegistrar }) {
   }
 
   const seguinte = proximaEtapa(form.etapa)
+  // No Pós-venda a etapa não muda e o retorno costuma ser em meses
+  const posVenda = emPosVenda(prospect)
+  const atalhos = posVenda
+    ? RETOMAR_POS_VENDA.map(([m, n]) => [daquiAMeses(m), n])
+    : [[2, 'Em 2 dias'], [7, 'Em 1 semana'], [15, 'Em 15 dias'], [30, 'Em 1 mês']].map(([d, n]) => [daquiA(d), n])
 
   return (
     <Modal
@@ -181,7 +191,7 @@ function RegistrarContato({ prospect, aoFechar, aoRegistrar }) {
         </div>
         <div className="grade-campos">
           <label className="campo"><span>Quando</span><input type="date" {...campo('contato_em')} max={hojeISO()} required /></label>
-          <label className="campo">
+          {!posVenda && <label className="campo">
             <span>Etapa depois deste contato</span>
             <select {...campo('etapa')}>
               {Object.entries(ETAPAS).map(([v, n]) => <option key={v} value={v}>{n}</option>)}
@@ -191,7 +201,7 @@ function RegistrarContato({ prospect, aoFechar, aoRegistrar }) {
                 Avançar para “{ETAPAS[seguinte]}”
               </button>
             )}
-          </label>
+          </label>}
         </div>
         <a className="botao-link alinhar-inicio" href="#/comercial/roteiros" target="_blank" rel="noreferrer">
           Abrir os roteiros de mensagem (em outra aba)
@@ -200,15 +210,15 @@ function RegistrarContato({ prospect, aoFechar, aoRegistrar }) {
           <span>Como foi</span>
           <textarea rows={3} placeholder="O que conversaram, objeções, interesse…" {...campo('texto')} />
         </label>
-        {!['fechado', 'perdido'].includes(form.etapa) && (
+        {(posVenda || !['fechado', 'perdido'].includes(form.etapa)) && (
           <>
             <div className="grade-campos">
               <label className="campo"><span>Retomar em</span><input type="date" {...campo('proximo_contato')} min={hojeISO()} /></label>
               <label className="campo"><span>Próximo passo</span><input {...campo('proximo_passo')} placeholder="Mandar proposta, cobrar resposta…" /></label>
             </div>
             <div className="filtros-status">
-              {[[2, 'Em 2 dias'], [7, 'Em 1 semana'], [15, 'Em 15 dias'], [30, 'Em 1 mês']].map(([d, n]) => (
-                <button key={d} type="button" className={`filtro ${form.proximo_contato === daquiA(d) ? 'ativo' : ''}`} onClick={() => setForm({ ...form, proximo_contato: daquiA(d) })}>{n}</button>
+              {atalhos.map(([data, n]) => (
+                <button key={n} type="button" className={`filtro ${form.proximo_contato === data ? 'ativo' : ''}`} onClick={() => setForm({ ...form, proximo_contato: data })}>{n}</button>
               ))}
             </div>
           </>
@@ -228,6 +238,7 @@ export default function PerfilProspect() {
   const [erro, setErro] = useState('')
   const [aviso, setAviso] = useState('')
   const [registrando, setRegistrando] = useState(false)
+  const [mandando, setMandando] = useState(false)
   const [versaoHistorico, setVersaoHistorico] = useState(0)
   const { estado: estadoSalvar, rodar } = useSalvar()
 
@@ -301,6 +312,46 @@ export default function PerfilProspect() {
     setAviso(`Área do Cliente de ${cliente.nome} criada. O contrato já está em Gestão › Contratos.`)
   }
 
+  function aplicar(data, mensagem) {
+    setProspect(data)
+    setForm(paraFormulario(data))
+    setAviso(mensagem)
+  }
+
+  async function tirarDoPosVenda() {
+    setErro('')
+    const { data, error } = await supabase.from('prospects')
+      .update({ pos_venda_motivo: null, pos_venda_desde: null, pos_venda_comprou: null, proximo_contato: null, proximo_passo: null })
+      .eq('id', prospect.id).select('*, clientes(id, nome)').single()
+    if (error) return setErro(traduzirErro(error))
+    aplicar(data, 'Saiu do Pós-venda e voltou para o Pipeline.')
+  }
+
+  // Nova negociação: abre um prospect novo no Pipeline (este fica como histórico da compra anterior)
+  async function voltouANegociar() {
+    setErro('')
+    const hoje = hojeISO()
+    const { data: novo, error } = await supabase.from('prospects').insert({
+      empresa: prospect.empresa,
+      responsavel: prospect.responsavel,
+      contato: prospect.contato,
+      cliente_id: prospect.cliente_id,
+      etapa: 'em_conversa',
+      status: 'morno',
+      data_primeiro_contato: hoje,
+      ultimo_contato: hoje,
+    }).select().single()
+    if (error) return setErro(traduzirErro(error))
+    await supabase.from('prospect_anotacoes').insert({
+      prospect_id: novo.id,
+      texto: `Voltou a negociar pelo Pós-venda (${prospect.pos_venda_comprou ? `já tinha comprado: ${prospect.pos_venda_comprou}` : 'cliente anterior'}).`,
+    })
+    await supabase.from('prospects')
+      .update({ pos_venda_motivo: null, pos_venda_desde: null, pos_venda_comprou: null, proximo_contato: null, proximo_passo: null })
+      .eq('id', prospect.id)
+    navigate(`/comercial/${novo.id}`)
+  }
+
   async function excluir() {
     const { error } = await supabase.from('prospects').delete().eq('id', prospect.id)
     if (error) return setErro(traduzirErro(error))
@@ -308,23 +359,74 @@ export default function PerfilProspect() {
   }
 
   const fechado = prospect.valor_fechado != null
+  const posVenda = emPosVenda(prospect)
 
   return (
     <div className="pagina">
-      <Link to="/comercial" className="migalha"><Icone nome="voltar" tamanho={16} /> Comercial</Link>
+      {posVenda
+        ? <Link to="/comercial/pos-venda" className="migalha"><Icone nome="voltar" tamanho={16} /> Pós-venda</Link>
+        : <Link to="/comercial" className="migalha"><Icone nome="voltar" tamanho={16} /> Comercial</Link>}
 
       <header className="pagina-topo linha-topo">
         <div>
           <h1>{prospect.empresa}</h1>
           <p className="texto-suave">
-            {[prospect.responsavel, prospect.servico_pretendido].filter(Boolean).join(' · ') || 'Prospect'}
+            {[prospect.responsavel, posVenda ? prospect.pos_venda_comprou : prospect.servico_pretendido].filter(Boolean).join(' · ') || 'Prospect'}
           </p>
         </div>
-        {fechado && <span className="selo-status status-fechado">Fechado · {formatarMoeda(prospect.valor_fechado)}</span>}
+        {posVenda
+          ? <SeloMotivo motivo={prospect.pos_venda_motivo} />
+          : fechado && <span className="selo-status status-fechado">Fechado · {formatarMoeda(prospect.valor_fechado)}</span>}
       </header>
 
       <form className="perfil-prospect" onSubmit={salvar}>
-        <section className="cartao secao">
+        {posVenda && (
+          <section className="cartao secao">
+            <div className="linha-topo">
+              <h2>Pós-venda</h2>
+              <button type="button" className="botao botao-principal botao-pequeno" onClick={() => setRegistrando(true)}>
+                <Icone nome="comentario" tamanho={16} /> Registrei um contato
+              </button>
+            </div>
+            <div className="campo">
+              <span>Por que está aqui</span>
+              <EscolhaMotivo valor={form.pos_venda_motivo} onChange={(pos_venda_motivo) => { setForm({ ...form, pos_venda_motivo }); setAviso('') }} />
+            </div>
+            <div className="grade-campos">
+              <label className="campo"><span>O que comprou</span><input {...campo('pos_venda_comprou')} /></label>
+              <label className="campo">
+                <span>{form.pos_venda_motivo === 'contrato_encerrado' ? 'Encerrou em' : 'Comprou em'}</span>
+                <input type="date" {...campo('pos_venda_desde')} />
+              </label>
+            </div>
+            <div className="resumo-jornada">
+              <div>
+                <span className="texto-suave">Último contato</span>
+                <strong>{prospect.ultimo_contato ? formatarData(prospect.ultimo_contato, { day: '2-digit', month: 'short', year: 'numeric' }) : 'Nunca'}</strong>
+              </div>
+              <div>
+                <span className="texto-suave">Retomar em</span>
+                <strong><ProximoContato prospect={prospect} comPasso={false} /></strong>
+              </div>
+            </div>
+            <div className="grade-campos">
+              <label className="campo"><span>Retomar o contato em</span><input type="date" {...campo('proximo_contato')} /></label>
+              <label className="campo"><span>Próximo passo</span><input {...campo('proximo_passo')} placeholder="Oferecer gestão mensal…" /></label>
+            </div>
+            <div className="filtros-status">
+              {RETOMAR_POS_VENDA.map(([m, n]) => (
+                <button key={m} type="button" className={`filtro ${form.proximo_contato === daquiAMeses(m) ? 'ativo' : ''}`} onClick={() => { setForm({ ...form, proximo_contato: daquiAMeses(m) }); setAviso('') }}>{n}</button>
+              ))}
+            </div>
+            <div className="botoes-pos-venda">
+              <button type="button" className="botao botao-secundario botao-pequeno" onClick={voltouANegociar}>Voltou a negociar</button>
+              <button type="button" className="botao botao-secundario botao-pequeno" onClick={tirarDoPosVenda}>Tirar do Pós-venda</button>
+            </div>
+            <p className="texto-suave dica-campo">“Voltou a negociar” abre uma negociação nova no Pipeline; este cadastro fica como histórico da compra anterior.</p>
+          </section>
+        )}
+
+        {!posVenda && <section className="cartao secao">
           <div className="linha-topo">
             <h2>Jornada</h2>
             <button type="button" className="botao botao-principal botao-pequeno" onClick={() => setRegistrando(true)}>
@@ -352,7 +454,7 @@ export default function PerfilProspect() {
             <span>Temperatura</span>
             <EscolhaStatus valor={form.status} onChange={(status) => setForm({ ...form, status })} />
           </div>
-        </section>
+        </section>}
 
         <section className="cartao secao">
           <h2>Dados do prospect</h2>
@@ -400,6 +502,21 @@ export default function PerfilProspect() {
       <Anotacoes prospectId={prospect.id} versao={versaoHistorico} />
 
       {registrando && <RegistrarContato prospect={prospect} aoFechar={() => setRegistrando(false)} aoRegistrar={contatoRegistrado} />}
+
+      {!posVenda && estaFechado(prospect) && (
+        <section className="cartao secao">
+          <h2>Pós-venda</h2>
+          <p className="texto-suave">Comprou só um produto ou encerrou o contrato? Mande para o Pós-venda para lembrar de retomar o contato depois de um tempo.</p>
+          <button className="botao botao-secundario alinhar-inicio" onClick={() => setMandando(true)}>Mandar para o Pós-venda</button>
+        </section>
+      )}
+      {mandando && (
+        <ModalPosVenda
+          prospect={prospect}
+          aoFechar={() => setMandando(false)}
+          aoSalvar={(data) => { setMandando(false); aplicar(data, 'Foi para o Pós-venda.') }}
+        />
+      )}
 
       <section className="cartao secao">
         <h2>Área do Cliente</h2>

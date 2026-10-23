@@ -28,12 +28,19 @@ export const CANAIS = {
   outro: 'Outro',
 }
 
+// Pós-venda: quem comprou só um produto ou encerrou o contrato, para retomar depois
+export const MOTIVOS_POS_VENDA = {
+  um_produto: 'Comprou só um produto',
+  contrato_encerrado: 'Encerrou o contrato',
+}
+
+export const emPosVenda = (p) => p.pos_venda_motivo != null
 export const fechado = (p) => p.etapa === 'fechado' || p.valor_fechado != null
 export const encerrado = (p) => fechado(p) || p.etapa === 'perdido'
 
 // Próximo contato em relação a hoje: atrasado, hoje ou em breve (até 3 dias)
 export function situacaoContato(p) {
-  if (!p.proximo_contato || encerrado(p)) return ''
+  if (!p.proximo_contato || (encerrado(p) && !emPosVenda(p))) return ''
   const hoje = hojeISO()
   if (p.proximo_contato < hoje) return 'atrasado'
   if (p.proximo_contato === hoje) return 'hoje'
@@ -60,6 +67,7 @@ export function AbasProspeccao() {
   return (
     <nav className="abas abas-prospeccao">
       <NavLink to="/comercial" end className="aba">Pipeline</NavLink>
+      <NavLink to="/comercial/pos-venda" className="aba">Pós-venda</NavLink>
       <NavLink to="/comercial/roteiros" className="aba">Roteiros</NavLink>
     </nav>
   )

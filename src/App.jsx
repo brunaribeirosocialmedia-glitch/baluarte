@@ -19,6 +19,7 @@ import Equipe from './pages/Equipe'
 import ListaProspects from './pages/prospeccao/ListaProspects'
 import PerfilProspect from './pages/prospeccao/PerfilProspect'
 import Roteiros from './pages/prospeccao/Roteiros'
+import PosVenda from './pages/prospeccao/PosVenda'
 import Financeiro from './pages/financeiro/Financeiro'
 import VisaoGeral from './pages/financeiro/VisaoGeral'
 import Lancamentos from './pages/financeiro/Lancamentos'
@@ -101,6 +102,7 @@ function AppAutenticado() {
           </Route>
           <Route path="comercial" element={<AreaProtegida area="prospeccao"><Outlet /></AreaProtegida>}>
             <Route index element={<ListaProspects />} />
+            <Route path="pos-venda" element={<PosVenda />} />
             <Route path="roteiros" element={<Roteiros />} />
             <Route path=":prospectId" element={<PerfilProspect />} />
           </Route>

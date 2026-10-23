@@ -203,3 +203,10 @@
   .tabela-prospects td:first-child { flex-direction: column; align-items: flex-start; gap: 2px; }
   .resumo-jornada { grid-template-columns: 1fr; }
 }
+
+/* Pós-venda: selos do motivo */
+.motivo-um_produto         { --cor-status: #5b4fd6; }
+.motivo-contrato_encerrado { --cor-status: #c4711c; }
+[data-theme='escuro'] .motivo-um_produto         { --cor-status: #8577f5; }
+[data-theme='escuro'] .motivo-contrato_encerrado { --cor-status: #bd7a33; }
+.botoes-pos-venda { display: flex; gap: 8px; flex-wrap: wrap; }
