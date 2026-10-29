@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { formatarData, hojeISO, paraISO } from '../../lib/datas'
 
 export const STATUS = {
+  possivel: 'Possível prospect',
   frio: 'Frio',
   morno: 'Morno',
   quente: 'Quente',
@@ -77,7 +78,7 @@ export function SeloStatus({ status }) {
   return <span className={`selo-status status-${status}`}>{STATUS[status]}</span>
 }
 
-// Botões Frio / Morno / Quente
+// Botões Possível / Frio / Morno / Quente
 export function EscolhaStatus({ valor, onChange }) {
   return (
     <div className="escolha-status" role="radiogroup" aria-label="Temperatura">

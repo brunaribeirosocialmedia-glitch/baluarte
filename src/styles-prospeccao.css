@@ -11,10 +11,12 @@
   font-size: 0.8rem; font-weight: 700; white-space: nowrap;
   border: 1px solid transparent;
 }
+.status-possivel { --cor-status: #7c7f8a; }
 .status-frio   { --cor-status: #3b82f6; }
 .status-morno  { --cor-status: #d69100; }
 .status-quente { --cor-status: #e5484d; }
 .status-fechado { --cor-status: #1f9d61; }
+[data-theme='escuro'] .status-possivel { --cor-status: #a9adb8; }
 [data-theme='escuro'] .status-frio   { --cor-status: #7aa7ff; }
 [data-theme='escuro'] .status-morno  { --cor-status: #f2b84b; }
 [data-theme='escuro'] .status-quente { --cor-status: #ff7b7f; }

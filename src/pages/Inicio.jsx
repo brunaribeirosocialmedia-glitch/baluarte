@@ -190,7 +190,7 @@ function ResumoProspeccao() {
       fechadoNoMes(mes),
       supabase.from('prospects').select('id, empresa, etapa, valor_fechado, proximo_contato, proximo_passo, pos_venda_motivo').not('pos_venda_motivo', 'is', null),
     ]).then(([{ data }, meta, fechado, { data: posVenda }]) => setDados({
-      abertos: (data || []).filter((p) => !encerrado(p) && !emPosVenda(p)),
+      abertos: (data || []).filter((p) => !encerrado(p) && !emPosVenda(p) && p.status !== 'possivel'),
       posVenda: posVenda || [],
       meta,
       fechado,
@@ -236,13 +236,13 @@ function ResumoProspeccao() {
       ) : (
         <>
           <div className="funil-barra" role="img" aria-label="Proporção de prospects frios, mornos e quentes">
-            {Object.keys(STATUS).map((s) => {
+            {Object.keys(STATUS).filter((s) => s !== 'possivel').map((s) => {
               const qtd = dados.abertos.filter((p) => p.status === s).length
               return qtd > 0 && <span key={s} className={`status-${s}`} style={{ flexGrow: qtd }} />
             })}
           </div>
           <div className="legenda-grafico">
-            {Object.entries(STATUS).map(([s, nome]) => (
+            {Object.entries(STATUS).filter(([s]) => s !== 'possivel').map(([s, nome]) => (
               <span key={s}><i className={`amostra status-${s}`} /> {nome}</span>
             ))}
           </div>

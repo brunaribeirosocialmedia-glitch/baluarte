@@ -21,7 +21,7 @@ const ORDENACOES = {
   recentes: { nome: '1º contato mais recente', fn: porData('data_primeiro_contato', -1) },
   empresa: { nome: 'Empresa (A–Z)', fn: (a, b) => a.empresa.localeCompare(b.empresa, 'pt-BR') },
   etapa: { nome: 'Etapa', fn: (a, b) => Object.keys(ETAPAS).indexOf(a.etapa) - Object.keys(ETAPAS).indexOf(b.etapa) },
-  temperatura: { nome: 'Mais quentes primeiro', fn: (a, b) => ['quente', 'morno', 'frio'].indexOf(a.status) - ['quente', 'morno', 'frio'].indexOf(b.status) },
+  temperatura: { nome: 'Mais quentes primeiro', fn: (a, b) => ['quente', 'morno', 'frio', 'possivel'].indexOf(a.status) - ['quente', 'morno', 'frio', 'possivel'].indexOf(b.status) },
   valor: { nome: 'Maior valor estimado', fn: (a, b) => (b.valor_estimado || 0) - (a.valor_estimado || 0) },
 }
 
@@ -207,7 +207,8 @@ export default function ListaProspects() {
   const mes = competenciaDe()
   const resumo = useMemo(() => {
     const lista = prospects || []
-    const abertos = lista.filter((p) => !encerrado(p))
+    const naoEncerrados = lista.filter((p) => !encerrado(p))
+    const abertos = naoEncerrados.filter((p) => p.status !== 'possivel')   // possível ainda não foi confirmado
     const fechados = lista.filter(fechado)
     return {
       fechadoNoMes: (todos || [])
@@ -215,8 +216,8 @@ export default function ListaProspects() {
         .reduce((soma, p) => soma + Number(p.valor_fechado || 0), 0),
       total: lista.length,
       abertos: abertos.length,
-      contatar: abertos.filter(precisaContatar).length,
-      porStatus: Object.fromEntries(Object.keys(STATUS).map((s) => [s, abertos.filter((p) => p.status === s).length])),
+      contatar: naoEncerrados.filter(precisaContatar).length,
+      porStatus: Object.fromEntries(Object.keys(STATUS).map((s) => [s, naoEncerrados.filter((p) => p.status === s).length])),
       emNegociacao: abertos.reduce((soma, p) => soma + Number(p.valor_estimado || 0), 0),
       fechados: fechados.length,
       perdidos: lista.filter((p) => p.etapa === 'perdido' && !fechado(p)).length,
