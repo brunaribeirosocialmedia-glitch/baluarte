@@ -2,16 +2,17 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase, traduzirErro } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { FORMAS_PAGAMENTO, formatarMoeda, lerMoeda, paraCampoMoeda } from '../../lib/moeda'
+import { formatarMoeda, lerMoeda, paraCampoMoeda } from '../../lib/moeda'
 import { CORES_CLIENTE } from '../../lib/cores'
 import Modal, { BotaoExcluir } from '../../components/Modal'
 import Icone from '../../components/Icone'
 import BotaoSalvar, { useSalvar } from '../../components/BotaoSalvar'
 import { formatarData, hojeISO, paraISO } from '../../lib/datas'
-import { CANAIS, ETAPAS, EscolhaStatus, ProximoContato, TrilhaEtapas, emPosVenda, encerrado, fechado as estaFechado } from './comum'
+import { CANAIS, ETAPAS, EscolhaStatus, ProximoContato, TrilhaEtapas, emPosVenda, encerrado, fechado as estaFechado, nomesDasCompras } from './comum'
 import { EscolhaMotivo, ModalPosVenda, RETOMAR_POS_VENDA, SeloMotivo, daquiAMeses } from './PosVenda'
+import Compras from './Compras'
 
-const CAMPOS_TEXTO = ['empresa', 'responsavel', 'contato', 'servico_pretendido', 'data_pagamento', 'forma_pagamento', 'proximo_contato', 'proximo_passo',
+const CAMPOS_TEXTO = ['empresa', 'responsavel', 'contato', 'servico_pretendido', 'proximo_contato', 'proximo_passo',
   'pos_venda_motivo', 'pos_venda_comprou', 'pos_venda_desde']
 
 function paraFormulario(p) {
@@ -26,9 +27,6 @@ function paraFormulario(p) {
     proximo_passo: p.proximo_passo || '',
     servico_pretendido: p.servico_pretendido || '',
     valor_estimado: paraCampoMoeda(p.valor_estimado),
-    valor_fechado: paraCampoMoeda(p.valor_fechado),
-    data_pagamento: p.data_pagamento || '',
-    forma_pagamento: p.forma_pagamento || '',
     pos_venda_motivo: p.pos_venda_motivo || '',
     pos_venda_comprou: p.pos_venda_comprou || '',
     pos_venda_desde: p.pos_venda_desde || '',
@@ -234,6 +232,7 @@ export default function PerfilProspect() {
   const navigate = useNavigate()
   const { permissoes } = useAuth()
   const [prospect, setProspect] = useState(undefined)
+  const [compras, setCompras] = useState([])
   const [form, setForm] = useState(null)
   const [erro, setErro] = useState('')
   const [aviso, setAviso] = useState('')
@@ -247,6 +246,8 @@ export default function PerfilProspect() {
       setProspect(data)
       if (data) setForm(paraFormulario(data))
     })
+    supabase.from('prospect_compras').select('*').eq('prospect_id', prospectId).order('comprado_em').order('criado_em')
+      .then(({ data }) => setCompras(data || []))
   }, [prospectId])
 
   if (prospect === undefined) return <div className="pagina"><p className="texto-suave">Carregando…</p></div>
@@ -272,16 +273,14 @@ export default function PerfilProspect() {
   async function gravar() {
     setErro('')
     const valorEstimado = lerMoeda(form.valor_estimado)
-    const valorFechado = lerMoeda(form.valor_fechado)
-    if (Number.isNaN(valorEstimado) || Number.isNaN(valorFechado)) return setErro('Confira os valores: use números, como 1.500,00.')
-    if (valorEstimado < 0 || valorFechado < 0) return setErro('Os valores não podem ser negativos.')
+    if (Number.isNaN(valorEstimado)) return setErro('Confira o valor: use números, como 1.500,00.')
+    if (valorEstimado < 0) return setErro('O valor não pode ser negativo.')
 
     const dados = {
       status: form.status,
       etapa: form.etapa,
       data_primeiro_contato: form.data_primeiro_contato || null,
       valor_estimado: valorEstimado,
-      valor_fechado: valorFechado,
       ...Object.fromEntries(CAMPOS_TEXTO.map((k) => [k, form[k].trim() || null])),
     }
     const { data, error } = await supabase.from('prospects').update(dados).eq('id', prospect.id).select('*, clientes(id, nome)').single()
@@ -300,6 +299,19 @@ export default function PerfilProspect() {
     setRegistrando(false)
     setVersaoHistorico((v) => v + 1)
     setAviso('Contato registrado.')
+  }
+
+  // A compra muda o valor fechado e a etapa no banco; o que está sendo digitado no resto do perfil continua
+  async function comprasMudaram(mensagem) {
+    const [{ data: lista }, { data, error }] = await Promise.all([
+      supabase.from('prospect_compras').select('*').eq('prospect_id', prospect.id).order('comprado_em').order('criado_em'),
+      supabase.from('prospects').select('*, clientes(id, nome)').eq('id', prospect.id).single(),
+    ])
+    setCompras(lista || [])
+    if (error) return setErro(traduzirErro(error))
+    setProspect(data)
+    setForm((f) => ({ ...f, etapa: data.etapa }))
+    setAviso(mensagem)
   }
 
   async function virarCliente() {
@@ -344,7 +356,7 @@ export default function PerfilProspect() {
     if (error) return setErro(traduzirErro(error))
     await supabase.from('prospect_anotacoes').insert({
       prospect_id: novo.id,
-      texto: `Voltou a negociar pelo Pós-venda (${prospect.pos_venda_comprou ? `já tinha comprado: ${prospect.pos_venda_comprou}` : 'cliente anterior'}).`,
+      texto: `Voltou a negociar pelo Pós-venda (${comprou ? `já tinha comprado: ${comprou}` : 'cliente anterior'}).`,
     })
     await supabase.from('prospects')
       .update({ pos_venda_motivo: null, pos_venda_desde: null, pos_venda_comprou: null, proximo_contato: null, proximo_passo: null })
@@ -360,6 +372,7 @@ export default function PerfilProspect() {
 
   const fechado = prospect.valor_fechado != null
   const posVenda = emPosVenda(prospect)
+  const comprou = nomesDasCompras(compras) || prospect.pos_venda_comprou
 
   return (
     <div className="pagina">
@@ -371,7 +384,7 @@ export default function PerfilProspect() {
         <div>
           <h1>{prospect.empresa}</h1>
           <p className="texto-suave">
-            {[prospect.responsavel, posVenda ? prospect.pos_venda_comprou : prospect.servico_pretendido].filter(Boolean).join(' · ') || 'Prospect'}
+            {[prospect.responsavel, posVenda ? comprou : nomesDasCompras(compras) || prospect.servico_pretendido].filter(Boolean).join(' · ') || 'Prospect'}
           </p>
         </div>
         {posVenda
@@ -393,7 +406,7 @@ export default function PerfilProspect() {
               <EscolhaMotivo valor={form.pos_venda_motivo} onChange={(pos_venda_motivo) => { setForm({ ...form, pos_venda_motivo }); setAviso('') }} />
             </div>
             <div className="grade-campos">
-              <label className="campo"><span>O que comprou</span><input {...campo('pos_venda_comprou')} /></label>
+              {compras.length === 0 && <label className="campo"><span>O que comprou</span><input {...campo('pos_venda_comprou')} /></label>}
               <label className="campo">
                 <span>{form.pos_venda_motivo === 'contrato_encerrado' ? 'Encerrou em' : 'Comprou em'}</span>
                 <input type="date" {...campo('pos_venda_desde')} />
@@ -474,20 +487,7 @@ export default function PerfilProspect() {
               <span>Valor estimado</span>
               <div className="campo-moeda"><span>R$</span><input inputMode="decimal" placeholder="0,00" {...campo('valor_estimado')} /></div>
             </label>
-            <label className="campo">
-              <span>Valor fechado</span>
-              <div className="campo-moeda"><span>R$</span><input inputMode="decimal" placeholder="0,00" {...campo('valor_fechado')} /></div>
-            </label>
-            <label className="campo"><span>Data de pagamento</span><input type="date" {...campo('data_pagamento')} /></label>
-            <label className="campo">
-              <span>Forma de pagamento</span>
-              <select {...campo('forma_pagamento')}>
-                <option value="">—</option>
-                {Object.entries(FORMAS_PAGAMENTO).map(([v, n]) => <option key={v} value={v}>{n}</option>)}
-              </select>
-            </label>
           </div>
-          <p className="texto-suave dica-campo">Preencher o valor fechado marca o prospect como fechado.</p>
         </section>
 
         <div className="barra-salvar">
@@ -499,6 +499,8 @@ export default function PerfilProspect() {
         </div>
       </form>
 
+      <Compras prospect={prospect} compras={compras} aoMudar={comprasMudaram} />
+
       <Anotacoes prospectId={prospect.id} versao={versaoHistorico} />
 
       {registrando && <RegistrarContato prospect={prospect} aoFechar={() => setRegistrando(false)} aoRegistrar={contatoRegistrado} />}
@@ -506,13 +508,14 @@ export default function PerfilProspect() {
       {!posVenda && estaFechado(prospect) && (
         <section className="cartao secao">
           <h2>Pós-venda</h2>
-          <p className="texto-suave">Comprou só um produto ou encerrou o contrato? Mande para o Pós-venda para lembrar de retomar o contato depois de um tempo.</p>
+          <p className="texto-suave">Comprou avulso ou encerrou o contrato? Mande para o Pós-venda para lembrar de retomar o contato depois de um tempo.</p>
           <button className="botao botao-secundario alinhar-inicio" onClick={() => setMandando(true)}>Mandar para o Pós-venda</button>
         </section>
       )}
       {mandando && (
         <ModalPosVenda
           prospect={prospect}
+          comprou={nomesDasCompras(compras)}
           aoFechar={() => setMandando(false)}
           aoSalvar={(data) => { setMandando(false); aplicar(data, 'Foi para o Pós-venda.') }}
         />

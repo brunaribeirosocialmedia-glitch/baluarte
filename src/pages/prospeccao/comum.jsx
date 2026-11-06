@@ -29,15 +29,23 @@ export const CANAIS = {
   outro: 'Outro',
 }
 
-// Pós-venda: quem comprou só um produto ou encerrou o contrato, para retomar depois
+// Pós-venda: quem comprou avulso ou encerrou o contrato, para retomar depois
 export const MOTIVOS_POS_VENDA = {
-  um_produto: 'Comprou só um produto',
+  um_produto: 'Comprou avulso',
   contrato_encerrado: 'Encerrou o contrato',
 }
 
 export const emPosVenda = (p) => p.pos_venda_motivo != null
 export const fechado = (p) => p.etapa === 'fechado' || p.valor_fechado != null
 export const encerrado = (p) => fechado(p) || p.etapa === 'perdido'
+
+// Compras do prospect em texto, da mais antiga para a mais nova: "Landing page + Consultoria"
+export const nomesDasCompras = (compras = []) => [...compras]
+  .sort((a, b) => a.comprado_em.localeCompare(b.comprado_em))
+  .map((c) => c.produto)
+  .join(' + ')
+export const oQueComprou = (p) => nomesDasCompras(p.prospect_compras) || p.pos_venda_comprou
+export const servicoDe = (p) => nomesDasCompras(p.prospect_compras) || p.servico_pretendido
 
 // Próximo contato em relação a hoje: atrasado, hoje ou em breve (até 3 dias)
 export function situacaoContato(p) {

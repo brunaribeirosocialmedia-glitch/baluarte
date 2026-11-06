@@ -4,7 +4,7 @@ import { supabase, traduzirErro } from '../../lib/supabase'
 import { formatarData, hojeISO, paraISO } from '../../lib/datas'
 import Modal from '../../components/Modal'
 import Icone from '../../components/Icone'
-import { AbasProspeccao, MOTIVOS_POS_VENDA, ProximoContato, emPosVenda, fechado, precisaContatar } from './comum'
+import { AbasProspeccao, MOTIVOS_POS_VENDA, ProximoContato, emPosVenda, fechado, oQueComprou, precisaContatar, servicoDe } from './comum'
 
 export function daquiAMeses(meses) {
   const d = new Date()
@@ -18,7 +18,7 @@ export function SeloMotivo({ motivo }) {
   return <span className={`selo-status motivo-${motivo}`}>{MOTIVOS_POS_VENDA[motivo]}</span>
 }
 
-// Botões "Comprou só um produto" / "Encerrou o contrato"
+// Botões "Comprou avulso" / "Encerrou o contrato"
 export function EscolhaMotivo({ valor, onChange }) {
   return (
     <div className="escolha-status" role="radiogroup" aria-label="Motivo">
@@ -35,14 +35,14 @@ export function EscolhaMotivo({ valor, onChange }) {
 
 // Manda alguém para o Pós-venda: um prospect que já existe (do perfil ou escolhido
 // da lista do Pipeline) ou alguém cadastrado do zero
-export function ModalPosVenda({ prospect, aoFechar, aoSalvar }) {
+export function ModalPosVenda({ prospect, comprou, aoFechar, aoSalvar }) {
   const [origem, setOrigem] = useState(prospect ? 'pipeline' : 'novo')
   const [pipeline, setPipeline] = useState(null)
   const [form, setForm] = useState({
     prospect_id: prospect?.id || '',
     empresa: '', responsavel: '', contato: '',
     pos_venda_motivo: 'um_produto',
-    pos_venda_comprou: prospect?.servico_pretendido || '',
+    pos_venda_comprou: comprou || prospect?.servico_pretendido || '',
     pos_venda_desde: hojeISO(),
     proximo_contato: daquiAMeses(3),
     proximo_passo: '',
@@ -53,7 +53,7 @@ export function ModalPosVenda({ prospect, aoFechar, aoSalvar }) {
 
   useEffect(() => {
     if (prospect || origem !== 'pipeline' || pipeline) return
-    supabase.from('prospects').select('id, empresa, etapa, valor_fechado, servico_pretendido, pos_venda_motivo').order('empresa')
+    supabase.from('prospects').select('id, empresa, etapa, valor_fechado, servico_pretendido, pos_venda_motivo, prospect_compras(produto, comprado_em)').order('empresa')
       .then(({ data }) => {
         const lista = (data || []).filter((p) => !emPosVenda(p))
         // fechados primeiro: são os que mais costumam vir para cá
@@ -123,7 +123,7 @@ export function ModalPosVenda({ prospect, aoFechar, aoSalvar }) {
               value={form.prospect_id}
               onChange={(e) => {
                 const p = pipeline.find((x) => x.id === e.target.value)
-                setForm({ ...form, prospect_id: e.target.value, pos_venda_comprou: form.pos_venda_comprou || p?.servico_pretendido || '' })
+                setForm({ ...form, prospect_id: e.target.value, pos_venda_comprou: form.pos_venda_comprou || (p && servicoDe(p)) || '' })
               }}
               required
             >
@@ -182,7 +182,7 @@ export default function PosVenda() {
   const [criando, setCriando] = useState(false)
 
   useEffect(() => {
-    supabase.from('prospects').select('*').not('pos_venda_motivo', 'is', null).then(({ data, error }) => {
+    supabase.from('prospects').select('*, prospect_compras(produto, comprado_em)').not('pos_venda_motivo', 'is', null).then(({ data, error }) => {
       if (error) setErro(traduzirErro(error))
       setLista(data || [])
     })
@@ -190,7 +190,7 @@ export default function PosVenda() {
 
   const buscados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
-    return (lista || []).filter((p) => !termo || [p.empresa, p.responsavel, p.contato, p.pos_venda_comprou, p.proximo_passo]
+    return (lista || []).filter((p) => !termo || [p.empresa, p.responsavel, p.contato, oQueComprou(p), p.proximo_passo]
       .some((x) => (x || '').toLowerCase().includes(termo)))
   }, [lista, busca])
 
@@ -214,7 +214,7 @@ export default function PosVenda() {
       <header className="pagina-topo linha-topo">
         <div>
           <h1>Pós-venda</h1>
-          <p className="texto-suave">Quem comprou só um produto ou encerrou o contrato, para retomar o contato depois de um tempo.</p>
+          <p className="texto-suave">Quem comprou avulso ou encerrou o contrato, para retomar o contato depois de um tempo.</p>
         </div>
         <button className="botao botao-principal" onClick={() => setCriando(true)}>
           <Icone nome="mais" tamanho={18} /> Adicionar
@@ -271,7 +271,7 @@ export default function PosVenda() {
                     )}
                   </td>
                   <td data-rotulo="Motivo"><SeloMotivo motivo={p.pos_venda_motivo} /></td>
-                  <td data-rotulo="Comprou">{p.pos_venda_comprou || <span className="texto-suave">—</span>}</td>
+                  <td data-rotulo="Comprou">{oQueComprou(p) || <span className="texto-suave">—</span>}</td>
                   <td data-rotulo="Desde">
                     {p.pos_venda_desde ? formatarData(p.pos_venda_desde, { day: '2-digit', month: '2-digit', year: 'numeric' }) : <span className="texto-suave">—</span>}
                   </td>

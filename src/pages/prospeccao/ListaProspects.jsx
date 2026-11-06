@@ -7,7 +7,7 @@ import Modal from '../../components/Modal'
 import Icone from '../../components/Icone'
 import CartaoMeta from '../../components/CartaoMeta'
 import { competenciaDe, proximoMes } from '../../lib/metas'
-import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, STATUS, SeloStatus, emPosVenda, encerrado, fechado, precisaContatar } from './comum'
+import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, STATUS, SeloStatus, emPosVenda, encerrado, fechado, precisaContatar, servicoDe } from './comum'
 
 // Datas vazias vão para o fim em qualquer ordenação por data
 const porData = (campo, sentido) => (a, b) => {
@@ -127,7 +127,7 @@ function CartaoProspect({ p, aoAbrir, aoArrastar, fantasma }) {
       onKeyDown={(e) => e.key === 'Enter' && aoAbrir()}
     >
       <p className="cartao-tarefa-titulo">{p.empresa}</p>
-      {p.servico_pretendido && <small className="texto-suave">{p.servico_pretendido}</small>}
+      {servicoDe(p) && <small className="texto-suave">{servicoDe(p)}</small>}
       <div className="cartao-tarefa-rodape">
         {p.etapa === 'fechado' && p.valor_fechado != null
           ? <strong className="valor-cartao">{formatarMoeda(p.valor_fechado)}</strong>
@@ -190,7 +190,7 @@ export default function ListaProspects() {
   const [criando, setCriando] = useState(false)
 
   useEffect(() => {
-    supabase.from('prospects').select('*').then(({ data, error }) => {
+    supabase.from('prospects').select('*, prospect_compras(produto, valor, comprado_em)').then(({ data, error }) => {
       if (error) setErro(traduzirErro(error))
       setTodos(data || [])
     })
@@ -212,8 +212,9 @@ export default function ListaProspects() {
     const fechados = lista.filter(fechado)
     return {
       fechadoNoMes: (todos || [])
-        .filter((p) => p.fechado_em >= mes && p.fechado_em < proximoMes(mes))
-        .reduce((soma, p) => soma + Number(p.valor_fechado || 0), 0),
+        .flatMap((p) => p.prospect_compras)
+        .filter((c) => c.comprado_em >= mes && c.comprado_em < proximoMes(mes))
+        .reduce((soma, c) => soma + Number(c.valor || 0), 0),
       total: lista.length,
       abertos: abertos.length,
       contatar: naoEncerrados.filter(precisaContatar).length,
@@ -227,7 +228,7 @@ export default function ListaProspects() {
 
   const buscados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
-    return (prospects || []).filter((p) => !termo || [p.empresa, p.responsavel, p.contato, p.servico_pretendido, p.proximo_passo]
+    return (prospects || []).filter((p) => !termo || [p.empresa, p.responsavel, p.contato, servicoDe(p), p.proximo_passo]
       .some((x) => (x || '').toLowerCase().includes(termo)))
   }, [prospects, busca])
 
@@ -366,7 +367,7 @@ export default function ListaProspects() {
                 <th>Temperatura</th>
                 <th>Último contato</th>
                 <th>Próximo contato</th>
-                <th>Serviço pretendido</th>
+                <th>Serviço</th>
               </tr>
             </thead>
             <tbody>
@@ -404,7 +405,7 @@ export default function ListaProspects() {
                       : <span className="texto-suave">Nunca</span>}
                   </td>
                   <td data-rotulo="Próximo">{encerrado(p) ? <span className="texto-suave">—</span> : <ProximoContato prospect={p} />}</td>
-                  <td data-rotulo="Serviço">{p.servico_pretendido || <span className="texto-suave">—</span>}</td>
+                  <td data-rotulo="Serviço">{servicoDe(p) || <span className="texto-suave">—</span>}</td>
                 </tr>
               ))}
             </tbody>

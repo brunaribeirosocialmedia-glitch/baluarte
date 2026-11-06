@@ -24,11 +24,11 @@ export function salvarMeta(area, competencia, valor) {
   return supabase.from('metas').upsert({ area, competencia, valor })
 }
 
-// Soma do valor fechado no Comercial dentro do mês
+// Soma das compras feitas dentro do mês (Comercial)
 export async function fechadoNoMes(competencia) {
-  const { data } = await supabase.from('prospects').select('valor_fechado')
-    .gte('fechado_em', competencia).lt('fechado_em', proximoMes(competencia))
-  return (data || []).reduce((soma, p) => soma + Number(p.valor_fechado || 0), 0)
+  const { data } = await supabase.from('prospect_compras').select('valor')
+    .gte('comprado_em', competencia).lt('comprado_em', proximoMes(competencia))
+  return (data || []).reduce((soma, c) => soma + Number(c.valor || 0), 0)
 }
 
 // Quanto do mês já passou (0 a 1). Meses passados contam como completos.
