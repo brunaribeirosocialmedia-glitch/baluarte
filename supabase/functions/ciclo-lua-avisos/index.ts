@@ -7,7 +7,8 @@ import { avisoDoMomento, diaLocal } from "./avisos.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "https://brunaribeirosocialmedia-glitch.github.io",
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const responder = (corpo: unknown, status = 200) =>
   new Response(JSON.stringify(corpo), { status, headers: { ...CORS, "Content-Type": "application/json" } });
