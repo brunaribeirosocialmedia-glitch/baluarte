@@ -406,3 +406,6 @@ textarea:focus, .entrada-simples:focus { border-color: var(--texto); box-shadow:
 /* Configurações: exclusão definitiva do cliente */
 .zona-perigo { border-color: color-mix(in srgb, var(--erro) 40%, var(--borda)); }
 .zona-perigo h2 { color: var(--erro); }
+
+/* Calendário: aviso na janela de nova tarefa */
+.dica-calendario { font-size: 0.85rem; color: var(--texto-suave); margin: 0; }
