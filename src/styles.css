@@ -313,3 +313,8 @@ a.atalho:hover { border-color: var(--borda-forte); transform: translateY(-2px); 
 /* Indicador de salvamento automático (janela da tarefa) */
 .status-salvamento { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--texto-suave); }
 .status-salvamento.erro { color: var(--erro); }
+
+/* Equipe: clientes que cada pessoa vê */
+.celula-clientes { min-width: 200px; }
+.clientes-da-pessoa { display: flex; flex-direction: column; gap: 6px; }
+.clientes-da-pessoa .marcar { font-size: 0.85rem; }
