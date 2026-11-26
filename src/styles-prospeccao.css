@@ -106,8 +106,10 @@
 
 /* Jornada: cores das etapas */
 .etapa-a_contatar       { --cor-etapa: #8a8797; }
+.etapa-aquecendo        { --cor-etapa: #d4843f; }
 .etapa-primeiro_contato { --cor-etapa: #3b78e7; }
 .etapa-em_conversa      { --cor-etapa: #7c5cd6; }
+.etapa-brecha           { --cor-etapa: #e5484d; }
 .etapa-reuniao          { --cor-etapa: #b04fcf; }
 .etapa-proposta         { --cor-etapa: #c98700; }
 .etapa-negociacao       { --cor-etapa: #e0692b; }
@@ -117,6 +119,8 @@
 [data-theme='escuro'] .etapa-perdido          { --cor-etapa: #a5a3b8; }
 [data-theme='escuro'] .etapa-primeiro_contato { --cor-etapa: #7aa7ff; }
 [data-theme='escuro'] .etapa-em_conversa      { --cor-etapa: #a98cff; }
+[data-theme='escuro'] .etapa-aquecendo        { --cor-etapa: #f2a96b; }
+[data-theme='escuro'] .etapa-brecha           { --cor-etapa: #ff7b7f; }
 [data-theme='escuro'] .etapa-reuniao          { --cor-etapa: #d98af0; }
 [data-theme='escuro'] .etapa-proposta         { --cor-etapa: #f2b84b; }
 [data-theme='escuro'] .etapa-negociacao       { --cor-etapa: #ff9a62; }

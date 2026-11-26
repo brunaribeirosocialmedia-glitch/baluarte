@@ -8,11 +8,15 @@ export const STATUS = {
   quente: 'Quente',
 }
 
-// Jornada: em que pé está a conversa (a temperatura continua à parte)
+// Jornada do social selling: o calor da relação (a temperatura continua à parte).
+// a_contatar e primeiro_contato são as antigas "A contatar" e "Primeiro contato
+// feito": só o nome mudou, por isso os cards não saíram do lugar.
 export const ETAPAS = {
-  a_contatar: 'A contatar',
-  primeiro_contato: 'Primeiro contato feito',
+  a_contatar: 'Mapeado',
+  aquecendo: 'Aquecendo',
+  primeiro_contato: 'Conversa aberta',
   em_conversa: 'Em conversa',
+  brecha: 'Brecha',
   reuniao: 'Reunião / diagnóstico',
   proposta: 'Proposta enviada',
   negociacao: 'Negociação',
