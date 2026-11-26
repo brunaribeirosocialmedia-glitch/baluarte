@@ -15,6 +15,7 @@ const caminhos = {
   mostrarMenu: 'M4 4h16v16H4zM9 4v16M13 9l3 3-3 3',
   fechar: 'M6 6l12 12M18 6 6 18',
   mais: 'M12 5v14M5 12h14',
+  sino: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0',
   tarefas: 'M4 4h5v16H4zM10.5 4h5v10h-5zM17 4h3v7h-3z',
   calendario: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
   notas: 'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h5',

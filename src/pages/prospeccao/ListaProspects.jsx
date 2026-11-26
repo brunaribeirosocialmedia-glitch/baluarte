@@ -7,6 +7,7 @@ import Modal from '../../components/Modal'
 import Icone from '../../components/Icone'
 import CartaoMeta from '../../components/CartaoMeta'
 import { competenciaDe, proximoMes } from '../../lib/metas'
+import LembreteCelular from './LembreteCelular'
 import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, SIGNIFICADO_STATUS, STATUS, SeloStatus, emPosVenda, encerrado, fechado, precisaContatar, servicoDe, situacaoContato } from './comum'
 
 // Datas vazias vão para o fim em qualquer ordenação por data
@@ -268,9 +269,12 @@ export default function ListaProspects() {
           <h1>Comercial</h1>
           <p className="texto-suave">Pipeline de vendas da B Mídia.</p>
         </div>
-        <button className="botao botao-principal" onClick={() => setCriando(true)}>
-          <Icone nome="mais" tamanho={18} /> Novo prospect
-        </button>
+        <div className="botoes-topo">
+          <LembreteCelular />
+          <button className="botao botao-principal" onClick={() => setCriando(true)}>
+            <Icone nome="mais" tamanho={18} /> Novo prospect
+          </button>
+        </div>
       </header>
 
       <div className="resumo-numeros">

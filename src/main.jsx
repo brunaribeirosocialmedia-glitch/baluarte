@@ -4,6 +4,7 @@ import { configurado } from './lib/supabase'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import App from './App'
+import { registrarServiceWorker } from './lib/lembretes'
 import './styles.css'
 import './styles-area-cliente.css'
 import './styles-prospeccao.css'
@@ -29,3 +30,5 @@ if (!configurado) {
     </React.StrictMode>
   )
 }
+
+registrarServiceWorker()

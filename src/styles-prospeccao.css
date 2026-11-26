@@ -243,3 +243,8 @@
 .tabela-prospects tr.toque-atrasado td:first-child { box-shadow: inset 3px 0 0 var(--erro); }
 .tabela-prospects tr.toque-hoje td:first-child     { box-shadow: inset 3px 0 0 #d69100; }
 .secao-ritmo .resumo-jornada small { font-size: 0.78rem; }
+
+/* Lembrete no celular */
+.botoes-topo { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.botoes-lembrete { display: flex; gap: 8px; flex-wrap: wrap; }
+.passos-instalar { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 4px; }
