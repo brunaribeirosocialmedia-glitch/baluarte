@@ -227,3 +227,12 @@
 .lista-compras button:hover { background: var(--realce); }
 .compra-valor { font-weight: 600; white-space: nowrap; }
 .compras-total { display: flex; justify-content: space-between; gap: 12px; padding: 6px 12px 0; }
+
+/* Legenda da temperatura (calor da relação) */
+.legenda-temperatura {
+  flex-basis: 100%; margin: 2px 0 0; display: flex; flex-wrap: wrap; gap: 4px 14px;
+  font-size: 0.78rem; color: var(--texto-suave);
+}
+.legenda-temperatura span { display: inline-flex; align-items: center; gap: 5px; }
+.legenda-temperatura strong { color: var(--texto); font-weight: 700; }
+.legenda-temperatura .amostra { width: 8px; height: 8px; border-radius: 50%; background: var(--cor-status); display: inline-block; }

@@ -8,6 +8,26 @@ export const STATUS = {
   quente: 'Quente',
 }
 
+// Temperatura = calor da relação (não só a qualidade do lead)
+export const SIGNIFICADO_STATUS = {
+  possivel: 'Ainda não passou pelo filtro de confirmação',
+  frio: 'Mapeado, sem relação',
+  morno: 'Aquecendo ou conversando',
+  quente: 'Brecha, engajado de verdade',
+}
+
+export const textoStatus = (s) => `${STATUS[s]}: ${SIGNIFICADO_STATUS[s]}`
+
+export function LegendaTemperatura() {
+  return (
+    <p className="legenda-temperatura">
+      {['frio', 'morno', 'quente'].map((s) => (
+        <span key={s}><i className={`amostra status-${s}`} /> <strong>{STATUS[s]}</strong> {SIGNIFICADO_STATUS[s].toLowerCase()}</span>
+      ))}
+    </p>
+  )
+}
+
 // Jornada do social selling: o calor da relação (a temperatura continua à parte).
 // a_contatar e primeiro_contato são as antigas "A contatar" e "Primeiro contato
 // feito": só o nome mudou, por isso os cards não saíram do lugar.
@@ -101,11 +121,13 @@ export function EscolhaStatus({ valor, onChange }) {
           role="radio"
           aria-checked={valor === v}
           className={`selo-status status-${v} ${valor === v ? 'marcado' : ''}`}
+          title={SIGNIFICADO_STATUS[v]}
           onClick={() => onChange(v)}
         >
           {nome}
         </button>
       ))}
+      <LegendaTemperatura />
     </div>
   )
 }

@@ -7,7 +7,7 @@ import { buscarMeta, competenciaDe, fechadoNoMes, ritmoEsperado } from '../lib/m
 import BarraMeta from '../components/BarraMeta'
 import Icone from '../components/Icone'
 import LegendaTarefas from '../components/LegendaTarefas'
-import { STATUS, emPosVenda, encerrado, precisaContatar } from './prospeccao/comum'
+import { SIGNIFICADO_STATUS, STATUS, emPosVenda, encerrado, precisaContatar } from './prospeccao/comum'
 import { situacaoContrato } from './gestao/Contratos'
 import { situacaoDocumento } from './gestao/Documentos'
 import { seloVencimento } from './gestao/Obrigacoes'
@@ -243,7 +243,7 @@ function ResumoProspeccao() {
           </div>
           <div className="legenda-grafico">
             {Object.entries(STATUS).filter(([s]) => s !== 'possivel').map(([s, nome]) => (
-              <span key={s}><i className={`amostra status-${s}`} /> {nome}</span>
+              <span key={s} title={SIGNIFICADO_STATUS[s]}><i className={`amostra status-${s}`} /> {nome}</span>
             ))}
           </div>
         </>

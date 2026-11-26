@@ -7,7 +7,7 @@ import Modal from '../../components/Modal'
 import Icone from '../../components/Icone'
 import CartaoMeta from '../../components/CartaoMeta'
 import { competenciaDe, proximoMes } from '../../lib/metas'
-import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, STATUS, SeloStatus, emPosVenda, encerrado, fechado, precisaContatar, servicoDe } from './comum'
+import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, SIGNIFICADO_STATUS, STATUS, SeloStatus, emPosVenda, encerrado, fechado, precisaContatar, servicoDe } from './comum'
 
 // Datas vazias vão para o fim em qualquer ordenação por data
 const porData = (campo, sentido) => (a, b) => {
@@ -255,7 +255,7 @@ export default function ListaProspects() {
   const filtros = [
     { valor: '', nome: 'Todos', qtd: resumo.total },
     { valor: 'contatar', nome: 'Preciso contatar', qtd: resumo.contatar, alerta: resumo.contatar > 0 },
-    ...Object.entries(STATUS).map(([v, nome]) => ({ valor: v, nome, qtd: resumo.porStatus[v] })),
+    ...Object.entries(STATUS).map(([v, nome]) => ({ valor: v, nome, qtd: resumo.porStatus[v], dica: SIGNIFICADO_STATUS[v] })),
     { valor: 'fechados', nome: 'Fechados', qtd: resumo.fechados },
     { valor: 'perdidos', nome: 'Perdidos', qtd: resumo.perdidos },
   ]
@@ -329,7 +329,7 @@ export default function ListaProspects() {
       {visao === 'lista' && (
         <div className="filtros-status">
           {filtros.map((f) => (
-            <button key={f.valor} className={`filtro ${filtro === f.valor ? 'ativo' : ''} ${f.alerta ? 'com-alerta' : ''}`} onClick={() => setFiltro(f.valor)}>
+            <button key={f.valor} className={`filtro ${filtro === f.valor ? 'ativo' : ''} ${f.alerta ? 'com-alerta' : ''}`} title={f.dica} onClick={() => setFiltro(f.valor)}>
               {f.nome} <span>{f.qtd}</span>
             </button>
           ))}
@@ -395,8 +395,9 @@ export default function ListaProspects() {
                       value={p.status}
                       onChange={(e) => atualizar(p, { status: e.target.value })}
                       aria-label={`Temperatura de ${p.empresa}`}
+                      title={SIGNIFICADO_STATUS[p.status]}
                     >
-                      {Object.entries(STATUS).map(([v, n]) => <option key={v} value={v}>{n}</option>)}
+                      {Object.entries(STATUS).map(([v, n]) => <option key={v} value={v} title={SIGNIFICADO_STATUS[v]}>{n}</option>)}
                     </select>
                   </td>
                   <td data-rotulo="Último contato">
