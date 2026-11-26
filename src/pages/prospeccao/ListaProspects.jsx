@@ -7,7 +7,7 @@ import Modal from '../../components/Modal'
 import Icone from '../../components/Icone'
 import CartaoMeta from '../../components/CartaoMeta'
 import { competenciaDe, proximoMes } from '../../lib/metas'
-import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, SIGNIFICADO_STATUS, STATUS, SeloStatus, emPosVenda, encerrado, fechado, precisaContatar, servicoDe } from './comum'
+import { AbasProspeccao, ETAPAS, EscolhaStatus, ProximoContato, SIGNIFICADO_STATUS, STATUS, SeloStatus, emPosVenda, encerrado, fechado, precisaContatar, servicoDe, situacaoContato } from './comum'
 
 // Datas vazias vão para o fim em qualquer ordenação por data
 const porData = (campo, sentido) => (a, b) => {
@@ -16,8 +16,8 @@ const porData = (campo, sentido) => (a, b) => {
 }
 
 const ORDENACOES = {
-  proximo: { nome: 'Próximo contato', fn: porData('proximo_contato', 1) },
-  ultimo: { nome: 'Sem contato há mais tempo', fn: porData('ultimo_contato', 1) },
+  proximo: { nome: 'Próximo toque', fn: porData('proximo_contato', 1) },
+  ultimo: { nome: 'Sem toque há mais tempo', fn: porData('ultimo_contato', 1) },
   recentes: { nome: '1º contato mais recente', fn: porData('data_primeiro_contato', -1) },
   empresa: { nome: 'Empresa (A–Z)', fn: (a, b) => a.empresa.localeCompare(b.empresa, 'pt-BR') },
   etapa: { nome: 'Etapa', fn: (a, b) => Object.keys(ETAPAS).indexOf(a.etapa) - Object.keys(ETAPAS).indexOf(b.etapa) },
@@ -118,7 +118,7 @@ function NovoProspect({ aoFechar, aoCriar }) {
 function CartaoProspect({ p, aoAbrir, aoArrastar, fantasma }) {
   return (
     <article
-      className={`cartao-tarefa cartao-prospect ${fantasma ? 'fantasma' : ''}`}
+      className={`cartao-tarefa cartao-prospect toque-${situacaoContato(p) || 'ok'} ${fantasma ? 'fantasma' : ''}`}
       draggable
       onDragStart={(e) => { e.dataTransfer.setData('text/plain', p.id); e.dataTransfer.effectAllowed = 'move'; aoArrastar(p.id) }}
       onDragEnd={() => aoArrastar(null)}
@@ -365,14 +365,14 @@ export default function ListaProspects() {
                 <th>Empresa</th>
                 <th>Etapa</th>
                 <th>Temperatura</th>
-                <th>Último contato</th>
-                <th>Próximo contato</th>
+                <th>Último toque</th>
+                <th>Próximo toque</th>
                 <th>Serviço</th>
               </tr>
             </thead>
             <tbody>
               {visiveis.map((p) => (
-                <tr key={p.id} className="linha-clicavel" onClick={() => navigate(p.id)}>
+                <tr key={p.id} className={`linha-clicavel toque-${situacaoContato(p) || 'ok'}`} onClick={() => navigate(p.id)}>
                   <td data-rotulo="Empresa">
                     <strong>{p.empresa}</strong>
                     {(p.responsavel || p.contato) && (
@@ -400,12 +400,12 @@ export default function ListaProspects() {
                       {Object.entries(STATUS).map(([v, n]) => <option key={v} value={v} title={SIGNIFICADO_STATUS[v]}>{n}</option>)}
                     </select>
                   </td>
-                  <td data-rotulo="Último contato">
+                  <td data-rotulo="Último toque">
                     {p.ultimo_contato
                       ? formatarData(p.ultimo_contato, { day: '2-digit', month: '2-digit', year: 'numeric' })
                       : <span className="texto-suave">Nunca</span>}
                   </td>
-                  <td data-rotulo="Próximo">{encerrado(p) ? <span className="texto-suave">—</span> : <ProximoContato prospect={p} />}</td>
+                  <td data-rotulo="Próximo toque">{encerrado(p) ? <span className="texto-suave">—</span> : <ProximoContato prospect={p} />}</td>
                   <td data-rotulo="Serviço">{servicoDe(p) || <span className="texto-suave">—</span>}</td>
                 </tr>
               ))}

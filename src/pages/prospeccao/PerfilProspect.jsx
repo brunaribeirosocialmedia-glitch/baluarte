@@ -12,7 +12,7 @@ import { CANAIS, ETAPAS, EscolhaStatus, ProximoContato, TrilhaEtapas, emPosVenda
 import { EscolhaMotivo, ModalPosVenda, RETOMAR_POS_VENDA, SeloMotivo, daquiAMeses } from './PosVenda'
 import Compras from './Compras'
 
-const CAMPOS_TEXTO = ['empresa', 'responsavel', 'contato', 'servico_pretendido', 'proximo_contato', 'proximo_passo',
+const CAMPOS_TEXTO = ['empresa', 'responsavel', 'contato', 'servico_pretendido', 'ultimo_contato', 'proximo_contato', 'proximo_passo',
   'pos_venda_motivo', 'pos_venda_comprou', 'pos_venda_desde']
 
 function paraFormulario(p) {
@@ -23,6 +23,7 @@ function paraFormulario(p) {
     status: p.status,
     etapa: p.etapa,
     data_primeiro_contato: p.data_primeiro_contato || '',
+    ultimo_contato: p.ultimo_contato || '',
     proximo_contato: p.proximo_contato || '',
     proximo_passo: p.proximo_passo || '',
     servico_pretendido: p.servico_pretendido || '',
@@ -111,6 +112,14 @@ function Anotacoes({ prospectId, versao }) {
 function proximaEtapa(etapa) {
   const ordem = Object.keys(ETAPAS)
   return ['fechado', 'perdido', 'negociacao'].includes(etapa) ? etapa : ordem[ordem.indexOf(etapa) + 1]
+}
+
+// "hoje", "ontem", "há 5 dias"
+function haQuanto(dataISO) {
+  const dias = Math.round((new Date(`${hojeISO()}T12:00`) - new Date(`${dataISO}T12:00`)) / 86400000)
+  if (dias <= 0) return 'hoje'
+  if (dias === 1) return 'ontem'
+  return `há ${dias} dias`
 }
 
 function daquiA(dias) {
@@ -211,7 +220,7 @@ function RegistrarContato({ prospect, aoFechar, aoRegistrar }) {
         {(posVenda || !['fechado', 'perdido'].includes(form.etapa)) && (
           <>
             <div className="grade-campos">
-              <label className="campo"><span>Retomar em</span><input type="date" {...campo('proximo_contato')} min={hojeISO()} /></label>
+              <label className="campo"><span>{posVenda ? 'Retomar em' : 'Próximo toque'}</span><input type="date" {...campo('proximo_contato')} min={hojeISO()} /></label>
               <label className="campo"><span>Próximo passo</span><input {...campo('proximo_passo')} placeholder="Mandar proposta, cobrar resposta…" /></label>
             </div>
             <div className="filtros-status">
@@ -292,7 +301,7 @@ export default function PerfilProspect() {
   }
 
   function contatoRegistrado(data) {
-    const jornada = ['etapa', 'data_primeiro_contato', 'proximo_contato', 'proximo_passo']
+    const jornada = ['etapa', 'data_primeiro_contato', 'ultimo_contato', 'proximo_contato', 'proximo_passo']
     const novo = paraFormulario(data)
     setProspect(data)
     setForm((f) => ({ ...f, ...Object.fromEntries(jornada.map((k) => [k, novo[k]])) }))
@@ -443,26 +452,10 @@ export default function PerfilProspect() {
           <div className="linha-topo">
             <h2>Jornada</h2>
             <button type="button" className="botao botao-principal botao-pequeno" onClick={() => setRegistrando(true)}>
-              <Icone nome="comentario" tamanho={16} /> Registrei um contato
+              <Icone nome="comentario" tamanho={16} /> Registrei um toque
             </button>
           </div>
           <TrilhaEtapas valor={form.etapa} onChange={(etapa) => { setForm({ ...form, etapa }); setAviso('') }} />
-          <div className="resumo-jornada">
-            <div>
-              <span className="texto-suave">Último contato</span>
-              <strong>{prospect.ultimo_contato ? formatarData(prospect.ultimo_contato, { day: '2-digit', month: 'short', year: 'numeric' }) : 'Nunca'}</strong>
-            </div>
-            <div>
-              <span className="texto-suave">Próximo contato</span>
-              <strong>{encerrado(prospect) ? '—' : <ProximoContato prospect={prospect} comPasso={false} />}</strong>
-            </div>
-          </div>
-          {!['fechado', 'perdido'].includes(form.etapa) && (
-            <div className="grade-campos">
-              <label className="campo"><span>Retomar em</span><input type="date" {...campo('proximo_contato')} /></label>
-              <label className="campo"><span>Próximo passo</span><input {...campo('proximo_passo')} placeholder="Mandar proposta, cobrar resposta…" /></label>
-            </div>
-          )}
           <div className="campo">
             <span>Temperatura</span>
             <EscolhaStatus valor={form.status} onChange={(status) => setForm({ ...form, status })} />
@@ -490,6 +483,43 @@ export default function PerfilProspect() {
           </div>
         </section>
 
+        {!posVenda && (
+          <section className="cartao secao secao-ritmo">
+            <div>
+              <h2>Ritmo</h2>
+              <p className="texto-suave dica-campo">A cadência do aquecimento: sem sumir, sem sufocar.</p>
+            </div>
+            <div className="resumo-jornada">
+              <div>
+                <span className="texto-suave">Último toque</span>
+                <strong>{prospect.ultimo_contato ? formatarData(prospect.ultimo_contato, { day: '2-digit', month: 'short', year: 'numeric' }) : 'Nunca'}</strong>
+                {prospect.ultimo_contato && <small className="texto-suave">{haQuanto(prospect.ultimo_contato)}</small>}
+              </div>
+              <div>
+                <span className="texto-suave">Próximo toque</span>
+                <strong>{encerrado(prospect) ? '—' : <ProximoContato prospect={prospect} comPasso={false} />}</strong>
+                {!encerrado(prospect) && prospect.proximo_passo && <small className="texto-suave">{prospect.proximo_passo}</small>}
+              </div>
+            </div>
+            <div className="grade-campos">
+              <label className="campo"><span>Último toque</span><input type="date" {...campo('ultimo_contato')} max={hojeISO()} /></label>
+              {!['fechado', 'perdido'].includes(form.etapa) && (
+                <label className="campo"><span>Próximo toque</span><input type="date" {...campo('proximo_contato')} /></label>
+              )}
+            </div>
+            {!['fechado', 'perdido'].includes(form.etapa) && (
+              <>
+                <div className="filtros-status">
+                  {[[2, 'Em 2 dias'], [4, 'Em 4 dias'], [7, 'Em 1 semana'], [15, 'Em 15 dias']].map(([d, n]) => (
+                    <button key={d} type="button" className={`filtro ${form.proximo_contato === daquiA(d) ? 'ativo' : ''}`} onClick={() => { setForm({ ...form, proximo_contato: daquiA(d) }); setAviso('') }}>{n}</button>
+                  ))}
+                </div>
+                <label className="campo"><span>O que fazer no próximo toque</span><input {...campo('proximo_passo')} placeholder="Comentar o post novo, mandar a DM, cobrar resposta…" /></label>
+              </>
+            )}
+          </section>
+        )}
+
         <div className="barra-salvar">
           {erro && <p className="alerta alerta-erro">{erro}</p>}
           {aviso && <p className="alerta alerta-ok">{aviso}</p>}
@@ -499,9 +529,9 @@ export default function PerfilProspect() {
         </div>
       </form>
 
-      <Compras prospect={prospect} compras={compras} aoMudar={comprasMudaram} />
-
       <Anotacoes prospectId={prospect.id} versao={versaoHistorico} />
+
+      <Compras prospect={prospect} compras={compras} aoMudar={comprasMudaram} />
 
       {registrando && <RegistrarContato prospect={prospect} aoFechar={() => setRegistrando(false)} aoRegistrar={contatoRegistrado} />}
 

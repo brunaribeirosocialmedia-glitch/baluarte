@@ -236,3 +236,10 @@
 .legenda-temperatura span { display: inline-flex; align-items: center; gap: 5px; }
 .legenda-temperatura strong { color: var(--texto); font-weight: 700; }
 .legenda-temperatura .amostra { width: 8px; height: 8px; border-radius: 50%; background: var(--cor-status); display: inline-block; }
+
+/* Ritmo: destaque do próximo toque vencido ou de hoje */
+.cartao-prospect.toque-atrasado { box-shadow: inset 3px 0 0 var(--erro); }
+.cartao-prospect.toque-hoje     { box-shadow: inset 3px 0 0 #d69100; }
+.tabela-prospects tr.toque-atrasado td:first-child { box-shadow: inset 3px 0 0 var(--erro); }
+.tabela-prospects tr.toque-hoje td:first-child     { box-shadow: inset 3px 0 0 #d69100; }
+.secao-ritmo .resumo-jornada small { font-size: 0.78rem; }
